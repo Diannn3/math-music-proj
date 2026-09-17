@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { RawAudioEngine } from '../audio';
+import { MusicalAudioEngine, RawAudioEngine, findEventAtTime } from '../audio';
 import { generateCanonicalScore } from '../composition';
 import type { MathMusicEvent } from '../composition';
 import { BifurcationField } from '../visual';
+
+type AudioMode = 'raw' | 'musicalized';
+type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
 
 function formatTime(seconds: number): string {
   const safe = Math.max(0, seconds);
@@ -11,25 +14,37 @@ function formatTime(seconds: number): string {
   return `${minutes}:${String(remainder).padStart(2, '0')}`;
 }
 
+function createAudioEngine(mode: AudioMode, score: ReturnType<typeof generateCanonicalScore>): ActiveAudioEngine {
+  return mode === 'raw' ? new RawAudioEngine(score) : new MusicalAudioEngine(score);
+}
+
 export default function BifurcateExperience() {
   const score = useMemo(() => generateCanonicalScore(), []);
-  const engineRef = useRef<RawAudioEngine | null>(null);
+  const engineRef = useRef<ActiveAudioEngine | null>(null);
   const rafRef = useRef<number | null>(null);
+  const [mode, setMode] = useState<AudioMode>('raw');
   const [audioReady, setAudioReady] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [switchingMode, setSwitchingMode] = useState(false);
   const [time, setTime] = useState(0);
   const [event, setEvent] = useState<MathMusicEvent>(() => score.events[0]);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const engine = new RawAudioEngine(score);
+  const bindEngine = (engine: ActiveAudioEngine) => {
     engine.setEventCallback((nextEvent) => setEvent(nextEvent));
     engineRef.current = engine;
+  };
+
+  useEffect(() => {
+    const engine = createAudioEngine('raw', score);
+    bindEngine(engine);
 
     const tick = () => {
-      const seconds = engine.currentTimeSeconds;
-      setTime(seconds);
-      setPlaying(engine.transport.state === 'started');
+      const activeEngine = engineRef.current;
+      if (activeEngine) {
+        setTime(activeEngine.currentTimeSeconds);
+        setPlaying(activeEngine.transport.state === 'started');
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
 
@@ -37,7 +52,7 @@ export default function BifurcateExperience() {
 
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-      engine.dispose();
+      engineRef.current?.dispose();
       engineRef.current = null;
     };
   }, [score]);
@@ -72,13 +87,49 @@ export default function BifurcateExperience() {
     setEvent(score.events[0]);
     setTime(0);
   };
+
+  const switchMode = async (nextMode: AudioMode) => {
+    if (nextMode === mode || switchingMode) return;
+    setSwitchingMode(true);
+    setError(null);
+
+    const previous = engineRef.current;
+    const position = previous?.currentTimeSeconds ?? time;
+    const wasPlaying = previous?.transport.state === 'started';
+
+    try {
+      previous?.pause();
+      previous?.dispose();
+
+      const next = createAudioEngine(nextMode, score);
+      bindEngine(next);
+      setMode(nextMode);
+      setEvent(findEventAtTime(score, position));
+
+      if (audioReady) {
+        await next.initialize();
+        next.schedule();
+        next.seek(position);
+        if (wasPlaying) await next.play();
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setSwitchingMode(false);
+    }
+  };
+
   const progress = Math.min(1, time / score.durationSeconds);
+  const primaryReadout = mode === 'raw' ? `${event.raw.frequencyHz.toFixed(2)} Hz` : event.musical.note;
+  const secondaryReadout = mode === 'raw'
+    ? `x = ${event.x.toFixed(6)}`
+    : `bucket ${event.musical.bucket + 1}/15 · Δ ${event.delta >= 0 ? '+' : ''}${event.delta.toFixed(4)}`;
 
   return (
     <main className="shell">
       <header className="hero">
         <div>
-          <p className="eyebrow">MATHEMATICAL MUSIC / RAW SONIFICATION</p>
+          <p className="eyebrow">MATHEMATICAL MUSIC / A-B SONIFICATION</p>
           <h1>BIFURCATE</h1>
           <p className="subtitle">Hearing the Logistic Map</p>
         </div>
@@ -89,26 +140,37 @@ export default function BifurcateExperience() {
         <BifurcationField event={event} showBeginOverlay={!audioReady} onBegin={begin} />
         {audioReady ? (
           <div className="stage-readout" aria-live="polite">
-            <span className="mode-chip">RAW</span>
-            <strong>{event.raw.frequencyHz.toFixed(2)} Hz</strong>
-            <span>x = {event.x.toFixed(6)}</span>
+            <span className={`mode-chip mode-chip--${mode}`}>{mode === 'raw' ? 'RAW' : 'MUSICALIZED'}</span>
+            <strong>{primaryReadout}</strong>
+            <span>{secondaryReadout}</span>
           </div>
         ) : null}
       </section>
 
       <section className="transport-panel" aria-label="Playback controls">
+        <div className="mode-switch" role="group" aria-label="Sonification mode">
+          <button type="button" className={mode === 'raw' ? 'is-active' : ''} aria-pressed={mode === 'raw'} disabled={switchingMode} onClick={() => void switchMode('raw')}>
+            <strong>Raw</strong>
+            <span>continuous frequency</span>
+          </button>
+          <button type="button" className={mode === 'musicalized' ? 'is-active' : ''} aria-pressed={mode === 'musicalized'} disabled={switchingMode} onClick={() => void switchMode('musicalized')}>
+            <strong>Musicalized</strong>
+            <span>D-minor pentatonic + artistic layers</span>
+          </button>
+        </div>
+
         <div className="state-grid">
           <div><span>Chapter</span><strong>{event.macroChapter}</strong></div>
           <div><span>r</span><strong>{event.r.toFixed(4)}</strong></div>
           <div><span>λ</span><strong>{Number.isFinite(event.lambda) ? event.lambda.toFixed(3) : '−∞'}</strong></div>
           <div><span>Period</span><strong>{event.detectedPeriod ?? '—'}</strong></div>
           <div><span>x[n]</span><strong>{event.x.toFixed(6)}</strong></div>
-          <div><span>Raw pitch</span><strong>{event.raw.frequencyHz.toFixed(1)} Hz</strong></div>
+          <div><span>{mode === 'raw' ? 'Raw pitch' : 'Musical note'}</span><strong>{mode === 'raw' ? `${event.raw.frequencyHz.toFixed(1)} Hz` : `${event.musical.note} · MIDI ${event.musical.midi}`}</strong></div>
         </div>
 
         <div className="transport-row">
-          <button type="button" onClick={togglePlayback} disabled={!audioReady}>{playing ? 'Pause' : 'Play'}</button>
-          <button type="button" onClick={stop} disabled={!audioReady}>Stop</button>
+          <button type="button" onClick={togglePlayback} disabled={!audioReady || switchingMode}>{playing ? 'Pause' : 'Play'}</button>
+          <button type="button" onClick={stop} disabled={!audioReady || switchingMode}>Stop</button>
           <div className="timeline" aria-label={`Playback ${Math.round(progress * 100)} percent`}>
             <div className="timeline-fill" style={{ transform: `scaleX(${progress})` }} />
           </div>
