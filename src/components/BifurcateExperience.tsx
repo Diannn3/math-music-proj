@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { MusicalAudioEngine, RawAudioEngine, findEventAtTime } from '../audio';
 import { generateCanonicalScore } from '../composition';
 import type { MathMusicEvent } from '../composition';
-import { BifurcationField } from '../visual';
+import { BifurcationField, OrbitHistory } from '../visual';
 import MappingInspector from './MappingInspector';
 
 type AudioMode = 'raw' | 'musicalized';
@@ -139,6 +139,7 @@ export default function BifurcateExperience() {
 
       <section className="stage" aria-label="Bifurcation visualization stage">
         <BifurcationField event={event} showBeginOverlay={!audioReady} onBegin={begin} />
+        {audioReady ? <OrbitHistory events={score.events} current={event} /> : null}
         {audioReady ? (
           <div className="stage-readout" aria-live="polite">
             <span className={`mode-chip mode-chip--${mode}`}>{mode === 'raw' ? 'RAW' : 'MUSICALIZED'}</span>
