@@ -34,3 +34,22 @@ export const SCORE_SEGMENTS: readonly ScoreSegment[] = [
 export const TOTAL_BARS = SCORE_SEGMENTS.reduce((sum, segment) => sum + segment.bars, 0);
 export const TOTAL_PRIMARY_EVENTS = TOTAL_BARS * EVENTS_PER_BAR;
 export const TOTAL_SECONDS = TOTAL_BARS * BEATS_PER_BAR * SECONDS_PER_BEAT;
+
+export type ScoreSegmentTimeline = ScoreSegment & {
+  startBar: number;
+  endBar: number;
+  startSeconds: number;
+  endSeconds: number;
+};
+
+export const SCORE_TIMELINE: readonly ScoreSegmentTimeline[] = (() => {
+  let barCursor = 0;
+  return SCORE_SEGMENTS.map((segment) => {
+    const startBar = barCursor + 1;
+    const endBar = barCursor + segment.bars;
+    const startSeconds = barCursor * BEATS_PER_BAR * SECONDS_PER_BEAT;
+    const endSeconds = endBar * BEATS_PER_BAR * SECONDS_PER_BEAT;
+    barCursor = endBar;
+    return { ...segment, startBar, endBar, startSeconds, endSeconds };
+  });
+})();
