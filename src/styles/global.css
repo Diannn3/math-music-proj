@@ -3,35 +3,88 @@
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #08090b;
   color: #f1efe8;
+  --bg: #08090b;
+  --surface: #0f1115;
+  --surface-2: #15181d;
+  --text: #f1efe8;
+  --muted: #8b929c;
+  --cool: #9cb8ff;
+  --border: rgba(255,255,255,.09);
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; background: #08090b; }
+html, body { margin: 0; min-height: 100%; background: var(--bg); }
 body { min-height: 100vh; }
 button, input { font: inherit; }
+button { color: inherit; }
 
 .shell {
   min-height: 100vh;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto minmax(360px, 1fr) auto;
   padding: 24px;
   gap: 20px;
 }
 
-.hero { max-width: 760px; }
-.eyebrow { margin: 0 0 8px; color: #8b929c; font-size: 12px; letter-spacing: .16em; }
-h1 { margin: 0; font-size: clamp(48px, 8vw, 108px); line-height: .88; letter-spacing: -.055em; }
-.subtitle { margin: 10px 0 18px; color: #c9c7bf; font-size: 18px; }
-code { color: #9cb8ff; font-family: "SFMono-Regular", Consolas, monospace; }
+.hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.eyebrow { margin: 0 0 8px; color: var(--muted); font-size: 11px; letter-spacing: .16em; }
+h1 { margin: 0; font-size: clamp(48px, 7vw, 104px); line-height: .88; letter-spacing: -.055em; }
+.subtitle { margin: 10px 0 0; color: #c9c7bf; font-size: 18px; }
+code { color: var(--cool); font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; }
 
 .stage {
+  position: relative;
   min-height: 52vh;
-  border: 1px solid rgba(255,255,255,.09);
+  border: 1px solid var(--border);
   border-radius: 18px;
-  background: #0f1115;
+  background: radial-gradient(circle at 50% 44%, rgba(156,184,255,.05), transparent 34%), var(--surface);
   display: grid;
   place-items: center;
   overflow: hidden;
 }
 
-.stage-placeholder { color: #666d78; font-size: 14px; }
+.begin-button {
+  display: grid;
+  gap: 7px;
+  min-width: min(360px, calc(100vw - 80px));
+  padding: 18px 22px;
+  border: 1px solid rgba(156,184,255,.35);
+  border-radius: 999px;
+  background: rgba(156,184,255,.08);
+  cursor: pointer;
+}
+.begin-button span { font-size: 15px; font-weight: 650; }
+.begin-button small { color: var(--muted); }
+
+.raw-readout { display: grid; justify-items: center; gap: 10px; }
+.raw-readout strong { font-size: clamp(42px, 7vw, 86px); letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.raw-readout > span:last-child { color: var(--muted); font-family: monospace; }
+.mode-chip { padding: 5px 8px; border: 1px solid rgba(156,184,255,.3); border-radius: 999px; color: var(--cool); font-size: 10px; letter-spacing: .14em; }
+
+.transport-panel { display: grid; gap: 16px; }
+.state-grid { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.state-grid > div { display: grid; gap: 5px; padding: 12px 14px; border-right: 1px solid var(--border); min-width: 0; }
+.state-grid > div:last-child { border-right: 0; }
+.state-grid span { color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.state-grid strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-variant-numeric: tabular-nums; }
+.transport-row { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 10px; }
+.transport-row button { border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2); padding: 8px 12px; cursor: pointer; }
+.transport-row button:disabled { opacity: .35; cursor: default; }
+.timeline { position: relative; height: 3px; background: rgba(255,255,255,.08); overflow: hidden; }
+.timeline-fill { position: absolute; inset: 0; transform-origin: left; background: var(--cool); }
+output { color: var(--muted); min-width: 92px; text-align: right; font: 12px/1 monospace; }
+.error-message { color: #ff9898; margin: 0; font-size: 12px; }
+
+@media (max-width: 800px) {
+  .shell { padding: 16px; }
+  .hero { align-items: start; flex-direction: column; }
+  .state-grid { grid-template-columns: repeat(3, 1fr); }
+  .state-grid > div { border-bottom: 1px solid var(--border); }
+  .transport-row { grid-template-columns: auto auto 1fr; }
+  output { grid-column: 1 / -1; text-align: left; }
+}
