@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { RawAudioEngine, findEventAtTime } from '../audio';
 import { generateCanonicalScore } from '../composition';
 import type { MathMusicEvent } from '../composition';
+import { BifurcationField } from '../visual';
 
 function formatTime(seconds: number): string {
   const safe = Math.max(0, seconds);
@@ -82,18 +83,14 @@ export default function BifurcateExperience() {
       </header>
 
       <section className="stage" aria-label="Bifurcation visualization stage">
-        {!audioReady ? (
-          <button className="begin-button" type="button" onClick={begin}>
-            <span>Begin raw sonification</span>
-            <small>Audio starts only after this gesture.</small>
-          </button>
-        ) : (
-          <div className="raw-readout" aria-live="polite">
+        <BifurcationField event={event} showBeginOverlay={!audioReady} onBegin={begin} />
+        {audioReady ? (
+          <div className="stage-readout" aria-live="polite">
             <span className="mode-chip">RAW</span>
             <strong>{event.raw.frequencyHz.toFixed(2)} Hz</strong>
             <span>x = {event.x.toFixed(6)}</span>
           </div>
-        )}
+        ) : null}
       </section>
 
       <section className="transport-panel" aria-label="Playback controls">

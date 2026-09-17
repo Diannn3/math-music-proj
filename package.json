@@ -16,7 +16,10 @@
     "astro": "^7.3.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "tone": "^15.1.22"
+    "tone": "^15.1.22",
+    "regl-scatterplot": "^1.16.0",
+    "regl": "^2.1.1",
+    "pub-sub-es": "^3.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
