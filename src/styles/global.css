@@ -65,8 +65,26 @@ output { color: var(--muted); min-width: 92px; text-align: right; font: 12px/1 m
 .mode-switch button.is-active { border-color: rgba(156,184,255,.42); background: rgba(156,184,255,.07); }
 .mode-switch button:disabled { opacity: .55; cursor: progress; }
 .mode-chip--musicalized { color: #efc681; border-color: rgba(239,198,129,.32); }
+.mapping-inspector { border: 1px solid var(--border); border-radius: 14px; background: linear-gradient(180deg, rgba(255,255,255,.018), transparent), var(--surface); overflow: hidden; }
+.mapping-inspector__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 14px; border-bottom: 1px solid var(--border); }
+.mapping-inspector__header > div { display: flex; align-items: baseline; gap: 10px; }
+.mapping-inspector__header strong { font-size: 12px; }
+.mapping-kicker { color: var(--muted); font: 9px/1 monospace; letter-spacing: .14em; }
+.mapping-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mapping-columns article { min-width: 0; padding: 13px 14px 14px; border-right: 1px solid var(--border); }
+.mapping-columns article:last-child { border-right: 0; }
+.mapping-category { display: block; margin-bottom: 11px; color: #aeb4be; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+.mapping-columns dl { display: grid; gap: 7px; margin: 0; }
+.mapping-columns dl > div { display: grid; grid-template-columns: minmax(72px, .8fr) minmax(0, 1.5fr); gap: 8px; align-items: baseline; }
+.mapping-columns dt { color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .05em; }
+.mapping-columns dd { margin: 0; overflow: hidden; color: #d7d5cf; font: 10px/1.35 "SFMono-Regular", Consolas, monospace; text-overflow: ellipsis; }
 @keyframes event-pulse { 0% { scale: .65; filter: brightness(1.8); } 55% { scale: 1.22; } 100% { scale: 1; filter: brightness(1); } }
 @media (prefers-reduced-motion: reduce) { .active-event-point { animation: none; } }
+@media (max-width: 900px) {
+  .mapping-columns { grid-template-columns: 1fr; }
+  .mapping-columns article { border-right: 0; border-bottom: 1px solid var(--border); }
+  .mapping-columns article:last-child { border-bottom: 0; }
+}
 @media (max-width: 800px) {
   .shell { padding: 16px; }
   .hero { align-items: start; flex-direction: column; }
