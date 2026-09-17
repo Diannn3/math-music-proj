@@ -3,6 +3,7 @@ import { MusicalAudioEngine, RawAudioEngine, findEventAtTime } from '../audio';
 import { generateCanonicalScore } from '../composition';
 import type { MathMusicEvent } from '../composition';
 import { BifurcationField } from '../visual';
+import MappingInspector from './MappingInspector';
 
 type AudioMode = 'raw' | 'musicalized';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
@@ -158,6 +159,8 @@ export default function BifurcateExperience() {
             <span>D-minor pentatonic + artistic layers</span>
           </button>
         </div>
+
+        <MappingInspector event={event} mode={mode} />
 
         <div className="state-grid">
           <div><span>Chapter</span><strong>{event.macroChapter}</strong></div>
