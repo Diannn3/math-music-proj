@@ -58,6 +58,13 @@ output { color: var(--muted); min-width: 92px; text-align: right; font: 12px/1 m
 .stage-readout { position: absolute; z-index: 4; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; background: rgba(8,9,11,.74); backdrop-filter: blur(10px); font-variant-numeric: tabular-nums; }
 .stage-readout strong { font-size: 12px; }
 .stage-readout > span:last-child { color: var(--muted); font: 11px/1 monospace; }
+.mode-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.mode-switch button { display: grid; gap: 4px; text-align: left; padding: 10px 12px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); cursor: pointer; transition: border-color 140ms ease, background 140ms ease; }
+.mode-switch button span { color: var(--muted); font-size: 10px; }
+.mode-switch button strong { font-size: 12px; }
+.mode-switch button.is-active { border-color: rgba(156,184,255,.42); background: rgba(156,184,255,.07); }
+.mode-switch button:disabled { opacity: .55; cursor: progress; }
+.mode-chip--musicalized { color: #efc681; border-color: rgba(239,198,129,.32); }
 @keyframes event-pulse { 0% { scale: .65; filter: brightness(1.8); } 55% { scale: 1.22; } 100% { scale: 1; filter: brightness(1); } }
 @media (prefers-reduced-motion: reduce) { .active-event-point { animation: none; } }
 @media (max-width: 800px) {
@@ -68,3 +75,4 @@ output { color: var(--muted); min-width: 92px; text-align: right; font: 12px/1 m
   .transport-row { grid-template-columns: auto auto 1fr; }
   output { grid-column: 1 / -1; text-align: left; }
 }
+@media (max-width: 640px) { .mode-switch { grid-template-columns: 1fr; } }
