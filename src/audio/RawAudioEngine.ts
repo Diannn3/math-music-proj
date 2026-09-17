@@ -40,12 +40,7 @@ export class RawAudioEngine {
     this.limiter = new Tone.Limiter(-1).toDestination();
     this.synth = new Tone.Synth({
       oscillator: { type: 'sine' },
-      envelope: {
-        attack: 0.004,
-        decay: 0.02,
-        sustain: 0.95,
-        release: 0.025,
-      },
+      envelope: { attack: 0.004, decay: 0.02, sustain: 0.95, release: 0.025 },
       volume: -8,
     }).connect(this.limiter);
 
@@ -54,23 +49,19 @@ export class RawAudioEngine {
   }
 
   schedule(): void {
-    if (!this.synth) {
-      throw new Error('RawAudioEngine.initialize() must be called before schedule().');
-    }
+    if (!this.synth) throw new Error('RawAudioEngine.initialize() must be called before schedule().');
 
     this.clearSchedule();
 
     for (const event of this.score.events) {
       const id = this.transport.schedule((time) => {
-        this.synth?.triggerAttackRelease(
-          event.raw.frequencyHz,
-          event.durationSeconds,
-          time,
-          event.raw.velocity,
-        );
-        this.eventCallback?.(event, time);
+        this.synth?.triggerAttackRelease(event.raw.frequencyHz, event.durationSeconds, time, event.raw.velocity);
+        if (this.eventCallback) {
+          Tone.getDraw().schedule(() => {
+            this.eventCallback?.(event, time);
+          }, time);
+        }
       }, event.timeSeconds);
-
       this.scheduledIds.push(id);
     }
 
@@ -80,24 +71,13 @@ export class RawAudioEngine {
   async play(fromSeconds?: number): Promise<void> {
     await this.initialize();
     if (!this.scheduled) this.schedule();
-
-    if (typeof fromSeconds === 'number') {
-      this.seek(fromSeconds);
-    }
-
-    if (this.transport.seconds >= this.score.durationSeconds) {
-      this.transport.seconds = 0;
-    }
-
-    if (this.transport.state !== 'started') {
-      this.transport.start();
-    }
+    if (typeof fromSeconds === 'number') this.seek(fromSeconds);
+    if (this.transport.seconds >= this.score.durationSeconds) this.transport.seconds = 0;
+    if (this.transport.state !== 'started') this.transport.start();
   }
 
   pause(): void {
-    if (this.transport.state === 'started') {
-      this.transport.pause();
-    }
+    if (this.transport.state === 'started') this.transport.pause();
   }
 
   stop(): void {
@@ -110,9 +90,7 @@ export class RawAudioEngine {
   }
 
   private clearSchedule(): void {
-    for (const id of this.scheduledIds) {
-      this.transport.clear(id);
-    }
+    for (const id of this.scheduledIds) this.transport.clear(id);
     this.scheduledIds = [];
     this.scheduled = false;
   }

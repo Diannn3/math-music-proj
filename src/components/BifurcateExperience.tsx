@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { RawAudioEngine, findEventAtTime } from '../audio';
+import { RawAudioEngine } from '../audio';
 import { generateCanonicalScore } from '../composition';
 import type { MathMusicEvent } from '../composition';
 import { BifurcationField } from '../visual';
@@ -23,12 +23,12 @@ export default function BifurcateExperience() {
 
   useEffect(() => {
     const engine = new RawAudioEngine(score);
+    engine.setEventCallback((nextEvent) => setEvent(nextEvent));
     engineRef.current = engine;
 
     const tick = () => {
       const seconds = engine.currentTimeSeconds;
       setTime(seconds);
-      setEvent(findEventAtTime(score, seconds));
       setPlaying(engine.transport.state === 'started');
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -59,7 +59,6 @@ export default function BifurcateExperience() {
   const togglePlayback = async () => {
     const engine = engineRef.current;
     if (!engine) return;
-
     try {
       if (engine.transport.state === 'started') engine.pause();
       else await engine.play();
@@ -68,7 +67,11 @@ export default function BifurcateExperience() {
     }
   };
 
-  const stop = () => engineRef.current?.stop();
+  const stop = () => {
+    engineRef.current?.stop();
+    setEvent(score.events[0]);
+    setTime(0);
+  };
   const progress = Math.min(1, time / score.durationSeconds);
 
   return (
