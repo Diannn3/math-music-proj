@@ -78,6 +78,15 @@ output { color: var(--muted); min-width: 92px; text-align: right; font: 12px/1 m
 .mapping-columns dl > div { display: grid; grid-template-columns: minmax(72px, .8fr) minmax(0, 1.5fr); gap: 8px; align-items: baseline; }
 .mapping-columns dt { color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .05em; }
 .mapping-columns dd { margin: 0; overflow: hidden; color: #d7d5cf; font: 10px/1.35 "SFMono-Regular", Consolas, monospace; text-overflow: ellipsis; }
+.orbit-history { position: absolute; z-index: 3; left: 14px; bottom: 14px; width: min(270px, 34vw); min-width: 190px; padding: 9px 10px 8px; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; background: rgba(8,9,11,.72); backdrop-filter: blur(9px); pointer-events: none; }
+.orbit-history header { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+.orbit-history header span, .orbit-history header strong { color: rgba(241,239,232,.48); font: 8px/1 monospace; letter-spacing: .08em; }
+.orbit-history svg { display: block; width: 100%; height: 68px; overflow: visible; }
+.orbit-history__midline { stroke: rgba(255,255,255,.055); stroke-width: .45; vector-effect: non-scaling-stroke; }
+.orbit-history__line { fill: none; stroke: rgba(156,184,255,.45); stroke-width: .8; vector-effect: non-scaling-stroke; }
+.orbit-history__point { fill: rgba(241,239,232,.48); vector-effect: non-scaling-stroke; }
+.orbit-history__point--active { fill: #f1efe8; stroke: rgba(156,184,255,.8); stroke-width: 1; }
+.orbit-history__scale { position: absolute; top: 24px; bottom: 9px; left: 5px; display: flex; flex-direction: column; justify-content: space-between; color: rgba(241,239,232,.28); font: 7px/1 monospace; }
 @keyframes event-pulse { 0% { scale: .65; filter: brightness(1.8); } 55% { scale: 1.22; } 100% { scale: 1; filter: brightness(1); } }
 @media (prefers-reduced-motion: reduce) { .active-event-point { animation: none; } }
 @media (max-width: 900px) {
@@ -93,4 +102,7 @@ output { color: var(--muted); min-width: 92px; text-align: right; font: 12px/1 m
   .transport-row { grid-template-columns: auto auto 1fr; }
   output { grid-column: 1 / -1; text-align: left; }
 }
-@media (max-width: 640px) { .mode-switch { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  .mode-switch { grid-template-columns: 1fr; }
+  .orbit-history { width: calc(100% - 28px); max-width: 280px; min-width: 0; bottom: 62px; }
+}
