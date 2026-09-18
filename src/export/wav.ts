@@ -57,3 +57,58 @@ export function audioBufferToWaveBytes(buffer: AudioBuffer): Uint8Array {
   );
   return encodePcm16Wave(channels, buffer.sampleRate);
 }
+
+
+export type Pcm16WaveInfo = {
+  channels: number;
+  sampleRate: number;
+  bitsPerSample: number;
+  dataBytes: number;
+  frameCount: number;
+  durationSeconds: number;
+};
+
+function readAscii(view: DataView, offset: number, length: number): string {
+  let value = '';
+  for (let index = 0; index < length; index += 1) {
+    value += String.fromCharCode(view.getUint8(offset + index));
+  }
+  return value;
+}
+
+export function inspectPcm16Wave(bytes: Uint8Array): Pcm16WaveInfo {
+  if (bytes.byteLength < 44) throw new RangeError('WAV payload is shorter than the canonical 44-byte PCM header.');
+
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (readAscii(view, 0, 4) !== 'RIFF') throw new Error('Missing RIFF signature.');
+  if (readAscii(view, 8, 4) !== 'WAVE') throw new Error('Missing WAVE signature.');
+  if (readAscii(view, 12, 4) !== 'fmt ') throw new Error('Expected PCM fmt chunk at byte 12.');
+  if (view.getUint32(16, true) !== 16) throw new Error('Expected canonical 16-byte PCM fmt chunk.');
+  if (view.getUint16(20, true) !== 1) throw new Error('WAV encoding is not linear PCM.');
+  if (readAscii(view, 36, 4) !== 'data') throw new Error('Expected data chunk at byte 36.');
+
+  const channels = view.getUint16(22, true);
+  const sampleRate = view.getUint32(24, true);
+  const blockAlign = view.getUint16(32, true);
+  const bitsPerSample = view.getUint16(34, true);
+  const dataBytes = view.getUint32(40, true);
+  const declaredRiffBytes = view.getUint32(4, true) + 8;
+
+  if (channels < 1) throw new Error('WAV declares zero channels.');
+  if (sampleRate < 1) throw new Error('WAV declares an invalid sample rate.');
+  if (bitsPerSample !== 16) throw new Error(`Expected PCM16, received ${bitsPerSample}-bit samples.`);
+  if (blockAlign !== channels * 2) throw new Error('WAV block alignment is inconsistent with PCM16 channel count.');
+  if (declaredRiffBytes !== bytes.byteLength) throw new Error('RIFF size field does not match payload length.');
+  if (44 + dataBytes !== bytes.byteLength) throw new Error('WAV data chunk size does not match payload length.');
+  if (dataBytes % blockAlign !== 0) throw new Error('WAV data chunk does not contain a whole number of frames.');
+
+  const frameCount = dataBytes / blockAlign;
+  return {
+    channels,
+    sampleRate,
+    bitsPerSample,
+    dataBytes,
+    frameCount,
+    durationSeconds: frameCount / sampleRate,
+  };
+}
