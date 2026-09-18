@@ -153,7 +153,7 @@ export default function BifurcateExperience() {
       const next = createAudioEngine(nextMode, score);
       bindEngine(next);
       setMode(nextMode);
-      setEvent(findEventAtTime(score, position));
+      if (!exploreOpen) setEvent(findEventAtTime(score, position));
 
       if (audioReady) {
         await next.initialize();
@@ -199,11 +199,11 @@ export default function BifurcateExperience() {
 
       <section className="transport-panel" aria-label="Playback controls">
         <div className="mode-switch" role="group" aria-label="Sonification mode">
-          <button type="button" className={mode === 'raw' ? 'is-active' : ''} aria-pressed={mode === 'raw'} disabled={switchingMode} onClick={() => void switchMode('raw')}>
+          <button type="button" className={mode === 'raw' ? 'is-active' : ''} aria-pressed={mode === 'raw'} disabled={switchingMode || auditioning} onClick={() => void switchMode('raw')}>
             <strong>Raw</strong>
             <span>continuous frequency</span>
           </button>
-          <button type="button" className={mode === 'musicalized' ? 'is-active' : ''} aria-pressed={mode === 'musicalized'} disabled={switchingMode} onClick={() => void switchMode('musicalized')}>
+          <button type="button" className={mode === 'musicalized' ? 'is-active' : ''} aria-pressed={mode === 'musicalized'} disabled={switchingMode || auditioning} onClick={() => void switchMode('musicalized')}>
             <strong>Musicalized</strong>
             <span>D-minor pentatonic + artistic layers</span>
           </button>
@@ -220,6 +220,7 @@ export default function BifurcateExperience() {
               type="button"
               className={exploreOpen ? 'analysis-toggle is-active' : 'analysis-toggle'}
               aria-pressed={exploreOpen}
+              disabled={!audioReady || switchingMode || auditioning}
               onClick={() => exploreOpen ? closeExplore() : setExploreOpen(true)}
             >
               <strong>Explore</strong>
