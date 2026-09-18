@@ -28,9 +28,9 @@ test('question-mark shortcut toggles the interpretation guide', async ({ page },
   test.skip(testInfo.project.name !== 'chromium', 'Keyboard shortcut semantics are exercised once in Chromium.');
 
   await page.goto('/');
-  await page.keyboard.press('?');
+  await page.keyboard.press('Shift+/');
   await expect(page.locator('.interpretation-guide')).toBeVisible();
-  await page.keyboard.press('?');
+  await page.keyboard.press('Shift+/');
   await expect(page.locator('.interpretation-guide')).toHaveCount(0);
 });
 
@@ -59,7 +59,10 @@ test('reduced motion suppresses decorative CSS motion and keeps the plot usable'
   const transitionDuration = await page.locator('.active-r-line').evaluate((node) => {
     return getComputedStyle(node).transitionDuration;
   });
-  expect(['0s', '0.001ms']).toContain(transitionDuration);
+  const durationSeconds = transitionDuration.endsWith('ms')
+    ? Number.parseFloat(transitionDuration) / 1000
+    : Number.parseFloat(transitionDuration);
+  expect(durationSeconds).toBeLessThanOrEqual(0.000001);
 
   await page.getByRole('button', { name: /Begin raw sonification/ }).click();
   await expect(page.locator('.stage-readout')).toBeVisible();
