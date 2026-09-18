@@ -5,6 +5,7 @@ import { detectVisualQuality } from './quality';
 
 type Props = { event: MathMusicEvent; showBeginOverlay?: boolean; onBegin?: () => void };
 type PlotStatus = { state: 'loading'; progress: number } | { state: 'ready'; pointCount: number } | { state: 'error'; message: string };
+type ScatterplotInstance = ReturnType<(typeof import('regl-scatterplot'))['default']>;
 
 export default function BifurcationField({ event, showBeginOverlay = false, onBegin }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -18,7 +19,7 @@ export default function BifurcationField({ event, showBeginOverlay = false, onBe
     const host = hostRef.current;
     if (!canvas || !host) return;
     let destroyed = false;
-    let scatterplot: { draw: (points: unknown) => Promise<unknown> | unknown; set: (options: Record<string, unknown>) => void; destroy: () => void } | null = null;
+    let scatterplot: ScatterplotInstance | null = null;
     const worker = new Worker(new URL('../workers/bifurcation.worker.ts', import.meta.url), { type: 'module' });
     const resize = () => {
       if (!scatterplot || destroyed) return;
