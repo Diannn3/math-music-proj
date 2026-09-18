@@ -324,6 +324,18 @@ Two masters are available:
 - RAW WAV
 - MUSICALIZED WAV
 
+### WAV release hardening
+
+Before a full WAV is downloaded, the release path now performs three distinct checks:
+
+1. Audio sample QC — peak, RMS, DC offset, channel count, sample rate, duration, non-finite samples.
+2. PCM16 encoding — the rendered `AudioBuffer` is encoded to canonical RIFF/WAVE bytes.
+3. RIFF re-inspection — the encoded payload is parsed again and its signatures, format code, channel count, sample rate, block alignment, bit depth, RIFF size and data-chunk size are validated.
+
+The Export panel also estimates the minimum PCM working set plus a fixed safety allowance. When `navigator.deviceMemory` reports a constrained device, full WAV export requires an explicit override instead of risking a surprise memory failure.
+
+A separate 2-second browser diagnostic renders RAW and MUSICALIZED excerpts through the same synthesis code. Chromium CI executes this path in production preview so offline audio is tested in a real browser rather than only through pure unit tests.
+
 ---
 
 ## 10. React responsibilities
