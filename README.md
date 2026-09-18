@@ -314,6 +314,7 @@ Read: **[Mathematical Integrity](docs/MATHEMATICAL_INTEGRITY.md)**
 - [Presentation Guide](docs/PRESENTATION.md)
 - [Audio Review](docs/AUDIO_REVIEW.md)
 - [Device QA](docs/DEVICE_QA.md)
+- [Performance and Visual Regression](docs/PERFORMANCE.md)
 - [Feature Branch History](docs/BRANCH_HISTORY.md)
 
 ---
