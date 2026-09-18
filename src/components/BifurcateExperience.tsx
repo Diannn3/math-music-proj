@@ -71,7 +71,23 @@ export default function BifurcateExperience() {
 
     const updateClock = () => {
       const activeEngine = engineRef.current;
-      if (activeEngine) setTime(activeEngine.currentTimeSeconds);
+      if (!activeEngine) return;
+
+      if (activeEngine.transport.state !== 'started') {
+        setPlaying(false);
+        setTime(activeEngine.currentTimeSeconds);
+        return;
+      }
+
+      const position = activeEngine.currentTimeSeconds;
+      if (position >= score.durationSeconds) {
+        activeEngine.pause();
+        setTime(score.durationSeconds);
+        setPlaying(false);
+        return;
+      }
+
+      setTime(position);
     };
 
     updateClock();
@@ -83,7 +99,7 @@ export default function BifurcateExperience() {
         clockRef.current = null;
       }
     };
-  }, [playing]);
+  }, [playing, score.durationSeconds]);
 
   const begin = async () => {
     try {
