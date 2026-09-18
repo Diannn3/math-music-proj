@@ -313,6 +313,7 @@ Read: **[Mathematical Integrity](docs/MATHEMATICAL_INTEGRITY.md)**
 - [Mathematical Integrity](docs/MATHEMATICAL_INTEGRITY.md)
 - [Presentation Guide](docs/PRESENTATION.md)
 - [Audio Review](docs/AUDIO_REVIEW.md)
+- [Device QA](docs/DEVICE_QA.md)
 - [Feature Branch History](docs/BRANCH_HISTORY.md)
 
 ---
