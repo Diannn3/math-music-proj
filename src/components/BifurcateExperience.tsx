@@ -10,6 +10,7 @@ import ExplorePanel from './ExplorePanel';
 import ExportPanel from './ExportPanel';
 import ChapterCue from './ChapterCue';
 import InterpretationGuide from './InterpretationGuide';
+import PresenterPanel from './PresenterPanel';
 import { isHelpShortcut } from './keyboard';
 
 type AudioMode = 'raw' | 'musicalized';
@@ -48,6 +49,10 @@ export default function BifurcateExperience() {
   const [auditioning, setAuditioning] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [presenterOpen, setPresenterOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).get('presenter') === '1';
+  });
   const [time, setTime] = useState(0);
   const [event, setEvent] = useState<MathMusicEvent>(() => score.events[0]);
   const [error, setError] = useState<string | null>(null);
@@ -261,12 +266,21 @@ export default function BifurcateExperience() {
         return;
       }
 
+      if (key === 'd') {
+        setPresenterOpen((open) => !open);
+        return;
+      }
+
       if (key === 'p') {
         setView((current) => current === 'performance' ? 'instrument' : 'performance');
         return;
       }
 
       if (key === 'escape') {
+        if (presenterOpen) {
+          setPresenterOpen(false);
+          return;
+        }
         setView('instrument');
         return;
       }
@@ -284,7 +298,7 @@ export default function BifurcateExperience() {
       window.removeEventListener('keydown', handleKeyDown);
       delete document.documentElement.dataset.bifurcateShortcutsReady;
     };
-  }, [audioReady, auditioning, exploreOpen, mode, switchingMode]);
+  }, [audioReady, auditioning, exploreOpen, mode, presenterOpen, switchingMode]);
 
   const progress = Math.min(1, time / score.durationSeconds);
   const coda = mode === 'musicalized' ? codaStateForEvent(event) : null;
@@ -345,6 +359,14 @@ export default function BifurcateExperience() {
         <div id="interpretation-guide">
           <InterpretationGuide onClose={() => setGuideOpen(false)} />
         </div>
+      ) : null}
+
+      {presenterOpen ? (
+        <PresenterPanel
+          timeSeconds={time}
+          onSeek={seekToChapter}
+          onClose={() => setPresenterOpen(false)}
+        />
       ) : null}
 
       <section className={`stage stage--${event.regime}`} aria-label="Bifurcation visualization stage">
