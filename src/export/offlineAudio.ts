@@ -12,6 +12,7 @@ import {
   modulationIndexForRegime,
   reverbWetForRegime,
 } from '../audio/musicalArrangement';
+import { codaStateForEvent } from '../audio/coda';
 
 export type OfflineRenderMode = 'raw' | 'musicalized';
 
@@ -102,19 +103,38 @@ export async function renderScoreOffline(
       volume: -28,
     }).connect(compressor);
 
+    const rawCoda = new Tone.Synth({
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.004, decay: 0.02, sustain: 0.95, release: 0.025 },
+      volume: -10,
+    }).connect(compressor);
+
     for (const event of score.events) {
       const time = event.timeSeconds;
+      const coda = codaStateForEvent(event);
       leadPanner.pan.setValueAtTime(event.musical.pan, time);
       lead.modulationIndex.setValueAtTime(modulationIndexForRegime(event.regime), time);
       reverb.wet.setValueAtTime(reverbWetForRegime(event.regime), time);
-      lead.triggerAttackRelease(
-        event.musical.note,
-        durationForArticulation(event.musical.articulation, EVENT_INTERVAL_SECONDS),
-        time,
-        event.musical.velocity,
-      );
 
-      if (event.musical.bassTrigger) {
+      if (coda.musicalMix > 0) {
+        lead.triggerAttackRelease(
+          event.musical.note,
+          durationForArticulation(event.musical.articulation, EVENT_INTERVAL_SECONDS),
+          time,
+          event.musical.velocity * coda.musicalMix,
+        );
+      }
+
+      if (coda.rawMix > 0) {
+        rawCoda.triggerAttackRelease(
+          event.raw.frequencyHz,
+          event.durationSeconds,
+          time,
+          event.raw.velocity * coda.rawMix,
+        );
+      }
+
+      if (event.musical.bassTrigger && coda.bass) {
         bass.triggerAttackRelease(
           midiToNoteName(foldMidiToBass(event.musical.midi)),
           EVENT_INTERVAL_SECONDS * 1.45,
@@ -123,7 +143,7 @@ export async function renderScoreOffline(
         );
       }
 
-      if (event.musical.haloTrigger) {
+      if (event.musical.haloTrigger && coda.halo) {
         halo.triggerAttackRelease(
           event.musical.note,
           EVENT_INTERVAL_SECONDS * 3.1,
@@ -132,7 +152,7 @@ export async function renderScoreOffline(
         );
       }
 
-      if (event.globalIndex % EVENTS_PER_BAR === 0) {
+      if (event.globalIndex % EVENTS_PER_BAR === 0 && coda.drone) {
         drone.triggerAttackRelease(
           [...DRONE_NOTES],
           EVENT_INTERVAL_SECONDS * EVENTS_PER_BAR * 0.92,
@@ -141,7 +161,7 @@ export async function renderScoreOffline(
         );
       }
 
-      if (event.musical.transientTrigger) {
+      if (event.musical.transientTrigger && coda.transient) {
         transient.triggerAttackRelease(
           0.045,
           time,
