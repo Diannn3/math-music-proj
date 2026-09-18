@@ -1,0 +1,57 @@
+name: Verify external release candidate
+
+on:
+  push:
+    branches:
+      - "feature/31-external-release-candidate"
+  workflow_dispatch:
+
+concurrency:
+  group: bifurcate-external-release
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  external:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RELEASE_URL: https://bifurcate-logistic-jequopv4n-nerooo3.vercel.app
+
+    steps:
+      - name: Checkout verification suite
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Wait for external HTTPS deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=""
+          for attempt in $(seq 1 30); do
+            status=$(curl --location --silent --show-error --output /tmp/bifurcate-rc.html --write-out '%{http_code}' "$RELEASE_URL" || true)
+            echo "attempt=$attempt status=$status"
+            if [ "$status" = "200" ]; then
+              break
+            fi
+            sleep 10
+          done
+          test "$status" = "200"
+          grep -q "BIFURCATE" /tmp/bifurcate-rc.html
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify external release in Chromium
+        run: npx playwright test --config=playwright.external.config.ts
