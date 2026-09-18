@@ -2,11 +2,11 @@
 
 **BIFURCATE** is a deterministic audiovisual composition and interactive mathematical instrument built from the logistic map:
 
-[
-x_{n+1}=r x_n(1-x_n)
-]
+```text
+x[n+1] = r * x[n] * (1 - x[n])
+```
 
-The project follows one equation from stable equilibrium through period doubling, chaos, a period-3 window where order returns, and finally the (r=4) regime. Every primary sound event and every highlighted visual state comes from the same canonical event stream.
+The project follows one equation from stable equilibrium through period doubling, chaos, a period-3 window where order returns, and finally the `r = 4` regime. Every primary sound event and every highlighted visual state comes from the same canonical event stream.
 
 The project deliberately distinguishes:
 
@@ -17,13 +17,11 @@ It never claims that the chosen scale, harmony, timbre, bass, drone, or effects 
 
 ## Current status
 
-The cumulative implementation is browser-tested through:
-
-`feature/19-browser-smoke-tests`
-
-This documentation pass is:
+The cumulative implementation is fully verified through:
 
 `feature/20-project-documentation`
+
+Its parent `feature/19-browser-smoke-tests` introduced the production-browser suite; feature 20 inherits that suite and also passes it.
 
 The CI pipeline verifies:
 
@@ -43,7 +41,7 @@ No feature branches have been merged into `main` automatically.
 
 ## Canonical composition
 
-| Section | Bars | Time | (r) | Reference behavior |
+| Section | Bars | Time | `r` | Reference behavior |
 | --- | ---: | ---: | ---: | --- |
 | I. Equilibrium | 8 | 0:00–0:20 | 2.8 | period 1 |
 | II. Split | 12 | 0:20–0:50 | 3.2 | period 2 |
@@ -63,28 +61,28 @@ Global form:
 - **92 bars**
 - **230 seconds**
 - **736 primary eighth-note events**
-- canonical initial state (x_0=0.2)
+- canonical initial state `x0 = 0.2`
 - canonical burn-in: **4096 iterations**
 
-The (r) value is fixed inside each orbit portrait. The cascade uses three fixed-(r) subchapters rather than pretending that a continuously changing parameter is the same dynamical system as a standard fixed-parameter logistic orbit.
+The `r` value is fixed inside each orbit portrait. The cascade uses three fixed-`r` subchapters rather than pretending that a continuously changing parameter is the same dynamical system as a standard fixed-parameter logistic orbit.
 
 ---
 
 ## RAW sonification
 
-Each (x_nin[0,1]) maps to continuous frequency:
+Each `x` in `[0, 1]` maps to continuous frequency:
 
-[
-f_n=110cdot2^{4x_n}
-]
+```text
+f = 110 * 2^(4x)
+```
 
 giving:
 
-- (x=0) → 110 Hz
-- (x=0.25) → 220 Hz
-- (x=0.5) → 440 Hz
-- (x=0.75) → 880 Hz
-- (x=1) → 1760 Hz
+- `x = 0` → 110 Hz
+- `x = 0.25` → 220 Hz
+- `x = 0.5` → 440 Hz
+- `x = 0.75` → 880 Hz
+- `x = 1` → 1760 Hz
 
 RAW mode uses:
 
@@ -113,11 +111,11 @@ Artistic layers:
 - sparse harmonic halo
 - D/A tonal anchor
 - pink-noise accents on large orbit jumps
-- velocity derived from (|Delta x|)
-- gentle pan derived from the sign of (Delta x)
+- velocity derived from `|Δx|`
+- gentle pan derived from the sign of `Δx`
 - regime-aware synthesis/reverb
 
-The final four bars of (r=4) deliberately deconstruct the musicalized arrangement:
+The final four bars of `r = 4` deliberately deconstruct the musicalized arrangement:
 
 1. transient layer removed
 2. halo removed
@@ -134,12 +132,12 @@ The bifurcation diagram is the stage, not decorative background.
 
 Primary visual semantics:
 
-- horizontal coordinate → (r)
-- vertical coordinate → (x)
+- horizontal coordinate → `r`
+- vertical coordinate → `x`
 - vertical playhead → active parameter
 - bright event point → current sounded state
 - orbit-history inset → temporal visitation order
-- regime color treatment → period/Lyapunov classification, **not raw (r)**
+- regime color treatment → period/Lyapunov classification, **not raw `r`**
 
 Adaptive point tiers:
 
@@ -167,12 +165,12 @@ Shows:
 
 - logistic cobweb plot
 - finite numerical Lyapunov curve
-- current (lambda)
+- current `λ`
 - detected period
 
 ### Explore Mode
 
-Choose (r) and (x_0), generate a short fixed-(r) portrait, inspect its classification, and audition it independently of the canonical performance Transport.
+Choose `r` and `x0`, generate a short fixed-`r` portrait, inspect its classification, and audition it independently of the canonical performance Transport.
 
 ### Export
 
@@ -289,7 +287,7 @@ docs/             architecture, integrity, presentation, branch history
 
 Core rules:
 
-1. (r) is **not** used as a direct chaos meter.
+1. `r` is **not** used as a direct chaos meter.
 2. Deterministic chaos is not called randomness.
 3. Period detection is a finite numerical classifier, not a mathematical proof.
 4. Lyapunov values are finite numerical estimates except where a known theoretical reference is explicitly stated.
