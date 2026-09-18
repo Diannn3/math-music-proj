@@ -79,6 +79,24 @@ export default function ExportPanel({ score, onClose }: Props) {
     setStatus('Provenance JSON exported.');
   };
 
+  const exportManifest = async () => {
+    try {
+      const response = await fetch('/bifurcate-release-manifest.json', { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error(`Release manifest unavailable: HTTP ${response.status}.`);
+      }
+      const manifest = await response.text();
+      downloadText(
+        manifest,
+        'BIFURCATE-release-manifest.json',
+        'application/json',
+      );
+      setStatus('Release manifest exported.');
+    } catch (caught) {
+      setStatus(caught instanceof Error ? caught.message : String(caught));
+    }
+  };
+
   const exportMidi = () => {
     downloadBytes(
       scoreToMidiBytes(score),
@@ -188,6 +206,10 @@ export default function ExportPanel({ score, onClose }: Props) {
           <strong>Provenance JSON</strong>
           <span>736 events · raw math · mappings · chapters</span>
         </button>
+        <button type="button" onClick={() => void exportManifest()}>
+          <strong>Release manifest</strong>
+          <span>SHA-256 hashes · canonical score metadata · release assets</span>
+        </button>
         <button type="button" onClick={exportMidi}>
           <strong>Musicalized MIDI</strong>
           <span>lead · bass · halo · drone · transient approximation</span>
@@ -261,6 +283,7 @@ export default function ExportPanel({ score, onClose }: Props) {
       </details>
 
       <p>
+        The release manifest hashes canonical source inputs and static assets for submission verification.
         MIDI stores musical event/control data, not the rendered Tone.js sound.
         WAV is rendered offline from the same deterministic score. Technical QC checks samples,
         not perceived loudness or artistic quality. JSON remains the canonical reconstruction record.
