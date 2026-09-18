@@ -13,6 +13,7 @@ import {
   reverbWetForRegime,
 } from '../audio/musicalArrangement';
 import { codaStateForEvent } from '../audio/coda';
+import { MASTER_COMPRESSOR, MASTER_LIMITER_DB, MASTER_REVERB, RAW_CODA_VOLUME_DB, RAW_SYNTH_VOLUME_DB } from '../audio/releaseAudio';
 
 export type OfflineRenderMode = 'raw' | 'musicalized';
 
@@ -23,13 +24,13 @@ export async function renderScoreOffline(
 ): Promise<AudioBuffer> {
   const tail = mode === 'musicalized' ? 3 : 0.5;
   const rendered = await Tone.Offline(async () => {
-    const limiter = new Tone.Limiter(-1).toDestination();
+    const limiter = new Tone.Limiter(MASTER_LIMITER_DB).toDestination();
 
     if (mode === 'raw') {
       const synth = new Tone.Synth({
         oscillator: { type: 'sine' },
         envelope: { attack: 0.004, decay: 0.02, sustain: 0.95, release: 0.025 },
-        volume: -8,
+        volume: RAW_SYNTH_VOLUME_DB,
       }).connect(limiter);
 
       for (const event of score.events) {
@@ -43,18 +44,9 @@ export async function renderScoreOffline(
       return;
     }
 
-    const compressor = new Tone.Compressor({
-      threshold: -18,
-      ratio: 3,
-      attack: 0.01,
-      release: 0.2,
-    }).connect(limiter);
+    const compressor = new Tone.Compressor(MASTER_COMPRESSOR).connect(limiter);
 
-    const reverb = new Tone.Reverb({
-      decay: 2.8,
-      preDelay: 0.015,
-      wet: 0.18,
-    }).connect(compressor);
+    const reverb = new Tone.Reverb(MASTER_REVERB).connect(compressor);
     await reverb.ready;
 
     const leadPanner = new Tone.Panner(0).connect(reverb);
@@ -106,7 +98,7 @@ export async function renderScoreOffline(
     const rawCoda = new Tone.Synth({
       oscillator: { type: 'sine' },
       envelope: { attack: 0.004, decay: 0.02, sustain: 0.95, release: 0.025 },
-      volume: -10,
+      volume: RAW_CODA_VOLUME_DB,
     }).connect(compressor);
 
     for (const event of score.events) {
