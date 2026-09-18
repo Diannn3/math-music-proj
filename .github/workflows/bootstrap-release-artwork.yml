@@ -1,0 +1,51 @@
+name: Bootstrap release artwork
+
+on:
+  push:
+    branches:
+      - "feature/29-release-shell-metadata"
+
+permissions:
+  contents: write
+
+jobs:
+  artwork:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/29-release-shell-metadata
+
+      - name: Use Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate deterministic SVG artwork
+        run: python scripts/generate_social_art.py
+
+      - name: Install SVG rasterizer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+
+      - name: Rasterize release images
+        run: |
+          rsvg-convert -w 1200 -h 630 public/og-bifurcate.svg -o public/og-bifurcate.png
+          rsvg-convert -w 180 -h 180 public/favicon.svg -o public/apple-touch-icon.png
+
+      - name: Commit generated release artwork
+        run: |
+          git add public
+          if git diff --cached --quiet; then
+            echo "Release artwork already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "release(art): commit generated social artwork"
+          git push origin HEAD:feature/29-release-shell-metadata
