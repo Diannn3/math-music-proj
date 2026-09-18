@@ -21,6 +21,7 @@ test('boots the production artwork and opens the Math Lens', async ({ page }) =>
   await expect(page.locator('.plot-status')).toContainText('orbit points', { timeout: 30_000 });
   await expect(page.locator('.plot-status')).not.toContainText('Plot error');
 
+  await page.getByRole('button', { name: 'Instrument' }).click();
   await page.getByRole('button', { name: /Math Lens/ }).click();
   await expect(page.locator('.math-lens').getByText('COBWEB', { exact: true }).first()).toBeVisible();
   await expect(page.locator('.math-lens').getByText('LYAPUNOV', { exact: true }).first()).toBeVisible();
@@ -36,9 +37,11 @@ test('unlocks audio, switches modes, seeks period-3, and enters Explore', async 
   await page.getByRole('button', { name: /Begin raw sonification/ }).click();
 
   await expect(page.locator('.stage-readout .mode-chip')).toContainText('RAW');
+  await expect(page.locator('.bifurcation-field')).toHaveClass(/bifurcation-field--cinematic/);
   await expect(page.getByRole('button', { name: 'Pause' })).toBeEnabled();
   await page.getByRole('button', { name: 'Pause' }).click();
 
+  await page.getByRole('button', { name: 'Instrument' }).click();
   const musicalized = page.getByRole('button', { name: /Musicalized D-minor pentatonic/ });
   await musicalized.click();
   await expect(musicalized).toHaveAttribute('aria-pressed', 'true');
@@ -48,6 +51,12 @@ test('unlocks audio, switches modes, seeks period-3, and enters Explore', async 
   await expect(page.locator('.state-grid > div').nth(1).locator('strong')).toHaveText('3.8300');
   await expect(page.locator('.state-grid > div').nth(3).locator('strong')).toHaveText('3');
 
+  await page.getByRole('button', { name: 'Performance' }).click();
+  await expect(page.locator('.bifurcation-field')).toHaveClass(/bifurcation-field--cinematic/);
+  await expect(page.locator('.plot-axis-label--x-left')).toContainText('3.790');
+  await expect(page.locator('.plot-axis-label--x-right')).toContainText('3.870');
+
+  await page.getByRole('button', { name: 'Instrument' }).click();
   await page.getByRole('button', { name: /Explore choose r/ }).click();
   await expect(page.getByRole('region', { name: 'Explore logistic-map parameter' })).toBeVisible();
   await expect(page.locator('.explore-metrics > div').nth(0).locator('strong')).toContainText('period 3');
@@ -63,6 +72,7 @@ test('downloads canonical provenance JSON and musicalized MIDI', async ({ page }
   const errors = capturePageErrors(page);
 
   await page.goto('/');
+  await page.getByRole('button', { name: 'Instrument' }).click();
   await page.getByRole('button', { name: /Export JSON \+ MIDI/ }).click();
   await expect(page.getByRole('region', { name: 'Export BIFURCATE' })).toBeVisible();
 
