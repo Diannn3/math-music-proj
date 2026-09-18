@@ -198,23 +198,39 @@ export default function BifurcationField({
         regime {event.regime}, detected period {event.detectedPeriod ?? 'none'}.
       </p>
 
-      <div className="plot-axis-label plot-axis-label--y-top">1.0</div>
-      <div className="plot-axis-label plot-axis-label--y-mid">0.5</div>
-      <div className="plot-axis-label plot-axis-label--y-bottom">0.0</div>
-      <div className="plot-axis-label plot-axis-label--x-left">r {axisLeft.toFixed(axisLeft < 3 ? 2 : 3)}</div>
-      <div className="plot-axis-label plot-axis-label--x-right">{axisRight.toFixed(axisRight === 4 ? 1 : 3)}</div>
+      {status.state === 'error' ? (
+        <div className="plot-fallback" role="status">
+          <span>VISUAL FALLBACK</span>
+          <strong>WebGL bifurcation field unavailable</strong>
+          <p>The mathematical event stream and audio remain active.</p>
+          <dl>
+            <div><dt>r</dt><dd>{event.r.toFixed(4)}</dd></div>
+            <div><dt>x[n]</dt><dd>{event.x.toFixed(6)}</dd></div>
+            <div><dt>λ</dt><dd>{Number.isFinite(event.lambda) ? event.lambda.toFixed(4) : '−∞'}</dd></div>
+            <div><dt>period</dt><dd>{event.detectedPeriod ?? '—'}</dd></div>
+          </dl>
+        </div>
+      ) : (
+        <>
+          <div className="plot-axis-label plot-axis-label--y-top">1.0</div>
+          <div className="plot-axis-label plot-axis-label--y-mid">0.5</div>
+          <div className="plot-axis-label plot-axis-label--y-bottom">0.0</div>
+          <div className="plot-axis-label plot-axis-label--x-left">r {axisLeft.toFixed(axisLeft < 3 ? 2 : 3)}</div>
+          <div className="plot-axis-label plot-axis-label--x-right">{axisRight.toFixed(axisRight === 4 ? 1 : 3)}</div>
 
-      <div
-        className={cameraMoving ? 'active-r-line is-camera-moving' : 'active-r-line'}
-        style={{ left: active.left }}
-        aria-hidden="true"
-      />
-      <div
-        key={event.id}
-        className={`active-event-point active-event-point--${event.regime}${cameraMoving ? ' is-camera-moving' : ''}`}
-        style={active}
-        aria-hidden="true"
-      />
+          <div
+            className={cameraMoving ? 'active-r-line is-camera-moving' : 'active-r-line'}
+            style={{ left: active.left }}
+            aria-hidden="true"
+          />
+          <div
+            key={event.id}
+            className={`active-event-point active-event-point--${event.regime}${cameraMoving ? ' is-camera-moving' : ''}`}
+            style={active}
+            aria-hidden="true"
+          />
+        </>
+      )}
 
       <div className="plot-status" aria-live="polite">
         {status.state === 'loading' ? `Building orbit field ${Math.round(status.progress * 100)}%` : null}
