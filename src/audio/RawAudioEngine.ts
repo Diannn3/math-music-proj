@@ -1,6 +1,7 @@
 import * as Tone from 'tone';
 import type { CanonicalScore, MathMusicEvent } from '../composition';
 import { clampScoreTime } from './timeline';
+import { MASTER_LIMITER_DB, RAW_SYNTH_VOLUME_DB } from './releaseAudio';
 
 export type RawAudioEventCallback = (event: MathMusicEvent, audioTime: number) => void;
 
@@ -37,11 +38,11 @@ export class RawAudioEngine {
 
     if (this.synth) return;
 
-    this.limiter = new Tone.Limiter(-1).toDestination();
+    this.limiter = new Tone.Limiter(MASTER_LIMITER_DB).toDestination();
     this.synth = new Tone.Synth({
       oscillator: { type: 'sine' },
       envelope: { attack: 0.004, decay: 0.02, sustain: 0.95, release: 0.025 },
-      volume: -8,
+      volume: RAW_SYNTH_VOLUME_DB,
     }).connect(this.limiter);
 
     this.transport.bpm.value = this.score.tempoBpm;
