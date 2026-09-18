@@ -1,0 +1,57 @@
+---
+import BifurcateExperience from '../components/BifurcateExperience';
+import StaticFallback from '../components/StaticFallback.astro';
+import '../styles/global.css';
+
+const title = 'BIFURCATE — Hearing the Logistic Map';
+const description =
+  'A deterministic audiovisual composition and interactive mathematical instrument built from the logistic map.';
+const configuredSite = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '');
+const canonicalUrl = configuredSite ? `${configuredSite}/` : null;
+const socialImage = configuredSite
+  ? `${configuredSite}/bifurcate-social.png`
+  : '/bifurcate-social.png';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0f1115" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="application-name" content="BIFURCATE" />
+    <meta name="author" content="BIFURCATE project" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="BIFURCATE" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={socialImage} />
+    <meta
+      property="og:image:alt"
+      content="A mathematically generated logistic-map bifurcation field used by BIFURCATE."
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    {canonicalUrl ? <meta property="og:url" content={canonicalUrl} /> : null}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+
+    {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/bifurcate-poster.png" as="image" fetchpriority="high" />
+
+    <title>{title}</title>
+  </head>
+  <body>
+    <BifurcateExperience client:only="react">
+      <StaticFallback slot="fallback" />
+    </BifurcateExperience>
+  </body>
+</html>

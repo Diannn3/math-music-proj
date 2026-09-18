@@ -1,0 +1,12 @@
+.git/
+.github/
+docs/
+e2e/
+fixtures/
+scripts/
+src/tests/
+test-results/
+playwright-report/
+blob-report/
+*.md
+!README.md

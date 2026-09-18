@@ -1,0 +1,83 @@
+name: Publish release-candidate dist
+
+on:
+  push:
+    branches:
+      - "feature/31-external-release-candidate"
+  workflow_dispatch:
+
+concurrency:
+  group: bifurcate-release-candidate-dist
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: feature/31-external-release-candidate
+          fetch-depth: 0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Use Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify independent mathematics
+        run: python scripts/verify_math.py
+
+      - name: Verify deterministic release artwork
+        run: |
+          python scripts/generate_release_art.py
+          git diff --exit-code -- public/bifurcate-social.png public/bifurcate-poster.png public/favicon.svg public/site.webmanifest
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Run Astro diagnostics
+        run: npm run check
+
+      - name: Build production dist
+        run: npm run build
+
+      - name: Publish immutable dist snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE_SHA="$GITHUB_SHA"
+          rm -rf /tmp/bifurcate-release-dist
+          mkdir -p /tmp/bifurcate-release-dist
+          cp -R dist/. /tmp/bifurcate-release-dist/
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git switch --orphan release-candidate-dist
+          git rm -rf . >/dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -R /tmp/bifurcate-release-dist/. .
+          printf '%s\n' "$SOURCE_SHA" > SOURCE_COMMIT
+          printf '%s\n' "BIFURCATE release-candidate static build." > README.txt
+          touch .nojekyll
+
+          git add -A
+          git commit -m "deploy: release candidate from $SOURCE_SHA"
+          git push --force origin HEAD:deploy/release-candidate

@@ -1,0 +1,79 @@
+name: Deploy release candidate to GitHub Pages
+
+on:
+  push:
+    branches:
+      - "feature/31-external-release-candidate"
+  workflow_dispatch:
+
+concurrency:
+  group: bifurcate-github-pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Use Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify independent mathematics
+        run: python scripts/verify_math.py
+
+      - name: Verify deterministic release artwork
+        run: |
+          python scripts/generate_release_art.py
+          git diff --exit-code -- public/bifurcate-social.png public/bifurcate-poster.png public/favicon.svg public/site.webmanifest
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Run Astro diagnostics
+        run: npm run check
+
+      - name: Build for GitHub Pages
+        env:
+          PUBLIC_SITE_URL: https://diannn3.github.io/math-music-proj
+        run: npm run build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
