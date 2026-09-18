@@ -28,13 +28,12 @@ test('question-mark shortcut toggles the interpretation guide', async ({ page },
   test.skip(testInfo.project.name !== 'chromium', 'Keyboard shortcut semantics are exercised once in Chromium.');
 
   await page.goto('/');
-  await page.evaluate(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: '/', code: 'Slash', bubbles: true }));
-  });
+  await expect(page.locator('html')).toHaveAttribute('data-bifurcate-shortcuts-ready', 'true');
+
+  await page.keyboard.press('/');
   await expect(page.locator('.interpretation-guide')).toBeVisible();
-  await page.evaluate(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: '?', code: 'Slash', bubbles: true }));
-  });
+
+  await page.keyboard.press('/');
   await expect(page.locator('.interpretation-guide')).toHaveCount(0);
 });
 
