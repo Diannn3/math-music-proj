@@ -92,5 +92,12 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps ${{ matrix.browser }}
 
+      - name: Start Firefox audio server
+        if: matrix.project == 'firefox'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pulseaudio
+          pulseaudio --start --exit-idle-time=-1
+
       - name: Run browser suite
         run: npx playwright test --project=${{ matrix.project }}
