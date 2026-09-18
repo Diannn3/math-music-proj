@@ -223,10 +223,9 @@ export default function BifurcateExperience() {
     const handleKeyDown = (keyEvent: KeyboardEvent) => {
       const key = keyEvent.key.toLowerCase();
 
-      // Help must remain available even when keyboard focus is on another
-      // non-text control. This is especially important for keyboard users
-      // moving through the interface with Tab.
-      if (key === '?' || (key === '/' && keyEvent.shiftKey)) {
+      // Help remains available while keyboard focus is on non-text controls.
+      // Accept both "/" and "?" so the shortcut works across keyboard layouts.
+      if (key === '?' || key === '/' || keyEvent.code === 'Slash') {
         keyEvent.preventDefault();
         setGuideOpen((open) => !open);
         return;
@@ -253,12 +252,6 @@ export default function BifurcateExperience() {
       if (key === 'e' && audioReady && !switchingMode && !auditioning) {
         if (exploreOpen) closeExplore();
         else setExploreOpen(true);
-        return;
-      }
-
-      if (key === '?' || key === '/' || keyEvent.code === 'Slash') {
-        keyEvent.preventDefault();
-        setGuideOpen((open) => !open);
         return;
       }
 
