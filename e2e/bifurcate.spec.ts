@@ -10,7 +10,25 @@ function capturePageErrors(page: Page): string[] {
   return errors;
 }
 
-test('boots the production artwork and opens the Math Lens', async ({ page }) => {
+async function expectVisualReady(page: Page, projectName: string) {
+  const status = page.locator('.plot-status');
+  await expect(status).not.toContainText('Building orbit field', { timeout: 30_000 });
+
+  const text = (await status.textContent()) ?? '';
+  if (projectName === 'chromium') {
+    expect(text).toContain('orbit points');
+    await expect(status).not.toContainText('Plot error');
+    return;
+  }
+
+  if (text.includes('Plot error')) {
+    await expect(page.getByRole('status').filter({ hasText: 'WebGL bifurcation field unavailable' })).toBeVisible();
+  } else {
+    expect(text).toContain('orbit points');
+  }
+}
+
+test('boots the production artwork and opens the Math Lens', async ({ page }, testInfo) => {
   const errors = capturePageErrors(page);
 
   await page.goto('/');
@@ -18,8 +36,7 @@ test('boots the production artwork and opens the Math Lens', async ({ page }) =>
   await expect(page.getByRole('heading', { name: 'BIFURCATE' })).toBeVisible();
   await expect(page.getByText('x[n+1] = r · x[n] · (1 − x[n])')).toBeVisible();
 
-  await expect(page.locator('.plot-status')).toContainText('orbit points', { timeout: 30_000 });
-  await expect(page.locator('.plot-status')).not.toContainText('Plot error');
+  await expectVisualReady(page, testInfo.project.name);
 
   await page.locator('.view-switch').getByRole('button', { name: 'Instrument', exact: true }).click();
   await page.getByRole('button', { name: /Math Lens/ }).click();
