@@ -1,16 +1,88 @@
 ---
 import BifurcateExperience from '../components/BifurcateExperience';
 import '../styles/global.css';
+
+const title = 'BIFURCATE — Hearing the Logistic Map';
+const description = 'A deterministic audiovisual composition and interactive mathematical instrument that turns the logistic map from equilibrium through bifurcation, chaos, periodic windows, and back to raw sonification.';
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = new URL('/og-bifurcate.png', Astro.site);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: 'BIFURCATE — Hearing the Logistic Map',
+  description,
+  url: canonical.toString(),
+  image: socialImage.toString(),
+  keywords: [
+    'logistic map',
+    'sonification',
+    'algorithmic composition',
+    'generative music',
+    'mathematics',
+    'bifurcation diagram',
+  ],
+  learningResourceType: 'Interactive audiovisual mathematical artwork',
+};
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="description" content="BIFURCATE — Hearing the Logistic Map" />
-    <title>BIFURCATE — Hearing the Logistic Map</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0f1115" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="BIFURCATE logistic-map bifurcation artwork with the equation x[n+1] = r x[n] (1-x[n])." />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <title>{title}</title>
   </head>
   <body>
-    <BifurcateExperience client:only="react" />
+    <BifurcateExperience client:only="react">
+      <main slot="fallback" class="release-fallback" aria-label="BIFURCATE static fallback">
+        <header>
+          <p>MATHEMATICAL MUSIC / LOGISTIC MAP</p>
+          <h1>BIFURCATE</h1>
+          <span>Hearing the Logistic Map</span>
+        </header>
+        <section>
+          <code>x[n+1] = r · x[n] · (1 − x[n])</code>
+          <p>
+            A deterministic audiovisual composition following one equation from equilibrium
+            through period doubling, chaos, the return of period-3 order, and a final return
+            to raw sonification.
+          </p>
+          <strong>Loading interactive audio + mathematical visualization…</strong>
+          <small>
+            The interactive experience requires JavaScript. The mathematical source and project
+            description remain available here if scripting is disabled.
+          </small>
+        </section>
+      </main>
+    </BifurcateExperience>
+
+    <noscript>
+      <div class="noscript-note">
+        JavaScript is disabled. BIFURCATE's live Web Audio, WebGL visualization, Math Lens,
+        Explore Mode, and exports require scripting.
+      </div>
+    </noscript>
   </body>
 </html>
