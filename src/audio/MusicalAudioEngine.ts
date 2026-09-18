@@ -15,6 +15,7 @@ import {
 } from './musicalArrangement';
 import { clampScoreTime } from './timeline';
 import { codaStateForEvent } from './coda';
+import { MASTER_COMPRESSOR, MASTER_LIMITER_DB, MASTER_REVERB, RAW_CODA_VOLUME_DB } from './releaseAudio';
 
 export type MusicalAudioEventCallback = (event: MathMusicEvent, audioTime: number) => void;
 
@@ -55,9 +56,9 @@ export class MusicalAudioEngine {
     await Tone.start();
     if (this.lead) return;
 
-    this.limiter = new Tone.Limiter(-1).toDestination();
-    this.compressor = new Tone.Compressor({ threshold: -18, ratio: 3, attack: 0.01, release: 0.2 }).connect(this.limiter);
-    this.reverb = new Tone.Reverb({ decay: 2.8, preDelay: 0.015, wet: 0.18 }).connect(this.compressor);
+    this.limiter = new Tone.Limiter(MASTER_LIMITER_DB).toDestination();
+    this.compressor = new Tone.Compressor(MASTER_COMPRESSOR).connect(this.limiter);
+    this.reverb = new Tone.Reverb(MASTER_REVERB).connect(this.compressor);
     await this.reverb.ready;
 
     this.leadPanner = new Tone.Panner(0).connect(this.reverb);
@@ -109,7 +110,7 @@ export class MusicalAudioEngine {
     this.rawCoda = new Tone.Synth({
       oscillator: { type: 'sine' },
       envelope: { attack: 0.004, decay: 0.02, sustain: 0.95, release: 0.025 },
-      volume: -10,
+      volume: RAW_CODA_VOLUME_DB,
     }).connect(this.compressor);
 
     this.transport.bpm.value = this.score.tempoBpm;
