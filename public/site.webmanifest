@@ -1,0 +1,16 @@
+{
+  "name": "BIFURCATE — Hearing the Logistic Map",
+  "short_name": "BIFURCATE",
+  "description": "A deterministic audiovisual composition built from the logistic map.",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
