@@ -295,3 +295,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--cool); outl
   .performance-hud { top: 10px; right: 10px; max-width: calc(100% - 20px); }
   .performance-hud button { padding: 6px 7px; font-size: 8px; }
 }
+
+
+.plot-fallback { position: absolute; z-index: 3; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; padding: 24px; text-align: center; background: radial-gradient(circle at 50% 50%, rgba(156,184,255,.05), transparent 38%), var(--surface); }
+.plot-fallback > span { color: var(--muted); font: 9px/1 monospace; letter-spacing: .14em; }
+.plot-fallback > strong { font-size: 14px; font-weight: 580; }
+.plot-fallback > p { margin: 0; color: var(--muted); font-size: 10px; }
+.plot-fallback dl { display: grid; grid-template-columns: repeat(4, minmax(70px,1fr)); gap: 0; margin: 8px 0 0; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.plot-fallback dl > div { display: grid; gap: 4px; padding: 8px 10px; border-right: 1px solid var(--border); }
+.plot-fallback dl > div:last-child { border-right: 0; }
+.plot-fallback dt { color: var(--muted); font: 8px/1 monospace; text-transform: uppercase; }
+.plot-fallback dd { margin: 0; font: 10px/1 monospace; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) {
+  .plot-fallback dl { grid-template-columns: repeat(2, 1fr); }
+  .plot-fallback dl > div:nth-child(2) { border-right: 0; }
+}
