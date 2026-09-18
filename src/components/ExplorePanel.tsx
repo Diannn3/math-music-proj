@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { generateParameterPortrait, type MathMusicEvent, type ParameterPortrait } from '../composition';
+import { useEffect, useRef, useState } from 'react';
+import type { MathMusicEvent, ParameterPortrait } from '../composition';
 
 type AudioMode = 'raw' | 'musicalized';
 
@@ -11,7 +11,12 @@ type Props = {
   onClose: () => void;
 };
 
-function regimeText(event: MathMusicEvent): string {
+type WorkerResponse =
+  | { type: 'portrait'; requestId: number; portrait: ParameterPortrait }
+  | { type: 'error'; requestId: number; message: string };
+
+function regimeText(event: MathMusicEvent | null): string {
+  if (!event) return 'computing…';
   if (event.regime === 'periodic') return event.detectedPeriod ? `period ${event.detectedPeriod}` : 'periodic';
   if (event.regime === 'chaotic') return 'chaotic';
   return 'transition / unresolved';
@@ -26,19 +31,72 @@ export default function ExplorePanel({
 }: Props) {
   const [r, setR] = useState(3.83);
   const [x0, setX0] = useState(0.2);
-  const portrait = useMemo(() => generateParameterPortrait(r, x0, 4), [r, x0]);
-  const event = portrait.events[0];
+  const [portrait, setPortrait] = useState<ParameterPortrait | null>(null);
+  const [computing, setComputing] = useState(true);
+  const [computeError, setComputeError] = useState<string | null>(null);
+  const workerRef = useRef<Worker | null>(null);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
-    onPortraitChange(event);
-  }, [event, onPortraitChange]);
+    const worker = new Worker(new URL('../workers/explore.worker.ts', import.meta.url), { type: 'module' });
+    workerRef.current = worker;
+
+    worker.onmessage = (message: MessageEvent<WorkerResponse>) => {
+      const response = message.data;
+      if (response.requestId !== requestIdRef.current) return;
+
+      if (response.type === 'error') {
+        setComputing(false);
+        setComputeError(response.message);
+        return;
+      }
+
+      setPortrait(response.portrait);
+      setComputing(false);
+      setComputeError(null);
+      const first = response.portrait.events[0];
+      if (first) onPortraitChange(first);
+    };
+
+    return () => {
+      worker.terminate();
+      workerRef.current = null;
+    };
+  }, [onPortraitChange]);
+
+  useEffect(() => {
+    const requestId = ++requestIdRef.current;
+    setComputing(true);
+    setComputeError(null);
+
+    const timer = window.setTimeout(() => {
+      workerRef.current?.postMessage({
+        type: 'portrait',
+        requestId,
+        r,
+        x0,
+        bars: 4,
+      });
+    }, 70);
+
+    return () => window.clearTimeout(timer);
+  }, [r, x0]);
+
+  const event = portrait?.events[0] ?? null;
+  const canAudition = Boolean(portrait) && !computing && !auditioning;
 
   return (
-    <section className="explore-panel" aria-label="Explore logistic-map parameter">
+    <section
+      className="explore-panel"
+      aria-label="Explore logistic-map parameter"
+      aria-busy={computing}
+    >
       <header>
         <div>
           <span>EXPLORE MODE</span>
-          <strong>Fixed-r portrait · {portrait.durationSeconds.toFixed(1)} s</strong>
+          <strong>
+            Fixed-r portrait · {portrait ? `${portrait.durationSeconds.toFixed(1)} s` : 'computing…'}
+          </strong>
         </div>
         <button type="button" onClick={onClose}>Return to piece</button>
       </header>
@@ -71,8 +129,8 @@ export default function ExplorePanel({
 
       <div className="explore-metrics">
         <div><span>Regime</span><strong>{regimeText(event)}</strong></div>
-        <div><span>λ</span><strong>{Number.isFinite(event.lambda) ? event.lambda.toFixed(4) : '−∞'}</strong></div>
-        <div><span>Period</span><strong>{event.detectedPeriod ?? '—'}</strong></div>
+        <div><span>λ</span><strong>{event ? (Number.isFinite(event.lambda) ? event.lambda.toFixed(4) : '−∞') : '…'}</strong></div>
+        <div><span>Period</span><strong>{event ? (event.detectedPeriod ?? '—') : '…'}</strong></div>
         <div><span>Mode</span><strong>{mode}</strong></div>
       </div>
 
@@ -92,13 +150,19 @@ export default function ExplorePanel({
         ))}
       </div>
 
+      {computeError ? <p className="error-message">Explore calculation failed: {computeError}</p> : null}
+
       <button
         type="button"
         className="explore-audition"
-        disabled={auditioning}
-        onClick={() => onAudition(portrait)}
+        disabled={!canAudition}
+        onClick={() => portrait && onAudition(portrait)}
       >
-        {auditioning ? 'Auditioning…' : `Audition ${mode === 'raw' ? 'raw sonification' : 'musicalized portrait'}`}
+        {auditioning
+          ? 'Auditioning…'
+          : computing
+            ? 'Computing portrait…'
+            : `Audition ${mode === 'raw' ? 'raw sonification' : 'musicalized portrait'}`}
       </button>
     </section>
   );
