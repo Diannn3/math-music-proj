@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MathMusicEvent } from '../composition';
 import { rToPercent, xToPercentFromTop } from './coordinates';
+import { detectVisualQuality } from './quality';
 
 type Props = { event: MathMusicEvent; showBeginOverlay?: boolean; onBegin?: () => void };
 type PlotStatus = { state: 'loading'; progress: number } | { state: 'ready'; pointCount: number } | { state: 'error'; message: string };
@@ -9,6 +10,7 @@ export default function BifurcationField({ event, showBeginOverlay = false, onBe
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<PlotStatus>({ state: 'loading', progress: 0 });
+  const [profile] = useState(detectVisualQuality);
   const active = useMemo(() => ({ left: `${rToPercent(event.r)}%`, top: `${xToPercentFromTop(event.x)}%` }), [event.r, event.x]);
 
   useEffect(() => {
@@ -31,8 +33,8 @@ export default function BifurcationField({ event, showBeginOverlay = false, onBe
         const module = await import('regl-scatterplot');
         if (destroyed) return;
         const rect = host.getBoundingClientRect();
-        scatterplot = module.default({ canvas, width: Math.max(1, rect.width), height: Math.max(1, rect.height), backgroundColor: '#0f1115', pointColor: '#87909f', pointSize: 1.2, opacity: 0.33, cameraIsFixed: true, showReticle: false, deselectOnDblClick: false });
-        worker.postMessage({ type: 'build', rSamples: 2048, burnIn: 1024, retain: 64, x0: 0.2 });
+        scatterplot = module.default({ canvas, width: Math.max(1, rect.width), height: Math.max(1, rect.height), backgroundColor: '#0f1115', pointColor: '#87909f', pointSize: profile.pointSize, opacity: profile.opacity, cameraIsFixed: true, showReticle: false, deselectOnDblClick: false });
+        worker.postMessage({ type: 'build', rSamples: profile.rSamples, burnIn: profile.burnIn, retain: profile.retain, x0: 0.2 });
       } catch (error) {
         if (!destroyed) setStatus({ state: 'error', message: error instanceof Error ? error.message : String(error) });
       }
@@ -58,11 +60,16 @@ export default function BifurcationField({ event, showBeginOverlay = false, onBe
       worker.terminate();
       scatterplot?.destroy();
     };
-  }, []);
+  }, [profile]);
 
   return (
     <div ref={hostRef} className="bifurcation-field">
       <canvas ref={canvasRef} className="bifurcation-canvas" aria-hidden="true" />
+      <p className="sr-only" aria-live="polite">
+        Logistic-map state: r {event.r.toFixed(4)}, x {event.x.toFixed(6)},
+        Lyapunov {Number.isFinite(event.lambda) ? event.lambda.toFixed(4) : 'negative infinity'},
+        regime {event.regime}, detected period {event.detectedPeriod ?? 'none'}.
+      </p>
       <div className="plot-axis-label plot-axis-label--y-top">1.0</div>
       <div className="plot-axis-label plot-axis-label--y-mid">0.5</div>
       <div className="plot-axis-label plot-axis-label--y-bottom">0.0</div>
@@ -72,7 +79,7 @@ export default function BifurcationField({ event, showBeginOverlay = false, onBe
       <div key={event.id} className={`active-event-point active-event-point--${event.regime}`} style={active} aria-hidden="true" />
       <div className="plot-status" aria-live="polite">
         {status.state === 'loading' ? `Building orbit field ${Math.round(status.progress * 100)}%` : null}
-        {status.state === 'ready' ? `${status.pointCount.toLocaleString()} orbit points` : null}
+        {status.state === 'ready' ? `${profile.quality} · ${status.pointCount.toLocaleString()} orbit points` : null}
         {status.state === 'error' ? `Plot error: ${status.message}` : null}
       </div>
       {showBeginOverlay ? (
