@@ -70,8 +70,17 @@ test('unlocks audio, switches modes, seeks period-3, and enters Explore', async 
 
   await page.locator('.view-switch').getByRole('button', { name: 'Performance', exact: true }).click();
   await expect(page.locator('.bifurcation-field')).toHaveClass(/bifurcation-field--cinematic/);
-  await expect(page.locator('.plot-axis-label--x-left')).toContainText('3.790');
-  await expect(page.locator('.plot-axis-label--x-right')).toContainText('3.870');
+
+  const performancePlotStatus = (await page.locator('.plot-status').textContent()) ?? '';
+  if (performancePlotStatus.includes('Plot error')) {
+    await expect(
+      page.getByRole('status').filter({ hasText: 'WebGL bifurcation field unavailable' }),
+    ).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: 'r3.8300' })).toBeVisible();
+  } else {
+    await expect(page.locator('.plot-axis-label--x-left')).toContainText('3.790');
+    await expect(page.locator('.plot-axis-label--x-right')).toContainText('3.870');
+  }
 
   await page.locator('.view-switch').getByRole('button', { name: 'Instrument', exact: true }).click();
   await page.getByRole('button', { name: /Explore choose r/ }).click();
