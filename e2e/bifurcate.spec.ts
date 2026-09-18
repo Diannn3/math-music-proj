@@ -22,8 +22,8 @@ test('boots the production artwork and opens the Math Lens', async ({ page }) =>
   await expect(page.locator('.plot-status')).not.toContainText('Plot error');
 
   await page.getByRole('button', { name: /Math Lens/ }).click();
-  await expect(page.getByText('COBWEB')).toBeVisible();
-  await expect(page.getByText('LYAPUNOV')).toBeVisible();
+  await expect(page.locator('.math-lens').getByText('COBWEB', { exact: true }).first()).toBeVisible();
+  await expect(page.locator('.math-lens').getByText('LYAPUNOV', { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/λ < 0 periodic/)).toBeVisible();
 
   expect(errors).toEqual([]);
@@ -35,14 +35,14 @@ test('unlocks audio, switches modes, seeks period-3, and enters Explore', async 
   await page.goto('/');
   await page.getByRole('button', { name: /Begin raw sonification/ }).click();
 
-  await expect(page.locator('.mode-chip')).toContainText('RAW');
+  await expect(page.locator('.stage-readout .mode-chip')).toContainText('RAW');
   await expect(page.getByRole('button', { name: 'Pause' })).toBeEnabled();
   await page.getByRole('button', { name: 'Pause' }).click();
 
   const musicalized = page.getByRole('button', { name: /Musicalized D-minor pentatonic/ });
   await musicalized.click();
   await expect(musicalized).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.mode-chip')).toContainText('MUSICALIZED');
+  await expect(page.locator('.stage-readout .mode-chip')).toContainText('MUSICALIZED');
 
   await page.getByRole('button', { name: /Jump to VI\. Island/ }).click();
   await expect(page.locator('.state-grid > div').nth(1).locator('strong')).toHaveText('3.8300');
