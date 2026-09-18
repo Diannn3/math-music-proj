@@ -42,6 +42,7 @@ export function createProvenanceDocument(score: CanonicalScore) {
           'D2/A2 tonal anchor once per bar',
           'pink-noise transient for abs(delta)>0.45',
           'regime-aware synthesis and reverb',
+          'final four-bar deconstruction: transient → halo → bass → drone removed while FM lead crossfades to RAW continuous-frequency sine',
         ],
       },
     },
@@ -50,6 +51,7 @@ export function createProvenanceDocument(score: CanonicalScore) {
       'Scale quantization, bass, halo, drone, synthesis, effects, and arrangement are artistic decisions.',
       'r is not treated as a direct chaos meter; regime labels use orbit period detection and a finite Lyapunov estimate.',
       'MIDI export approximates synthesis/transient layers and is not rendered audio.',
+      'The RAW coda is continuous-frequency audio; MIDI represents it only as a labeled nearest-semitone approximation.',
     ],
     events: score.events,
   };
