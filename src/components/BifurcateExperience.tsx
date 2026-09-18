@@ -246,7 +246,8 @@ export default function BifurcateExperience() {
         return;
       }
 
-      if (key === '?') {
+      if (key === '?' || (key === '/' && keyEvent.shiftKey)) {
+        keyEvent.preventDefault();
         setGuideOpen((open) => !open);
         return;
       }
