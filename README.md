@@ -17,23 +17,30 @@ It never claims that the chosen scale, harmony, timbre, bass, drone, or effects 
 
 ## Current status
 
-The cumulative implementation is fully verified through:
+The latest fully green cumulative baseline is `feature/32-accessibility-comprehension`.
+The current implementation branch is `feature/33-demo-submission-resilience`.
 
-`feature/20-project-documentation`
+The CI pipeline now verifies:
 
-Its parent `feature/19-browser-smoke-tests` introduced the production-browser suite; feature 20 inherits that suite and also passes it.
-
-The CI pipeline verifies:
-
+- an independent Python mathematical reference implementation
+- deterministic release-art regeneration
+- deterministic release-manifest regeneration
 - Vitest unit/invariant suites
 - Astro + TypeScript diagnostics
 - production build
-- Chromium/Playwright runtime smoke tests
-- WebGL stage boot
+- Chromium, Firefox, and WebKit desktop runtime suites
+- mobile Chromium and mobile WebKit layouts
+- WebGL stage boot or explicit fallback
 - Web Audio unlock and RAW/MUSICALIZED switching
 - period-3 chapter seeking
 - Explore Mode
-- JSON and MIDI downloads
+- JSON, release-manifest, and MIDI downloads
+- real-browser short offline WAV rendering/QC
+- explicit performance budgets
+- visual-regression baselines
+- reduced-motion and keyboard-accessibility behavior
+
+External hosting is kept separate from normal CI and must pass the manual external-release workflow before it is called verified.
 
 No feature branches have been merged into `main` automatically.
 
@@ -176,11 +183,16 @@ Shows:
 
 Choose `r` and `x0`, generate a short fixed-`r` portrait, inspect its classification, and audition it independently of the canonical performance Transport.
 
+### Presenter mode
+
+Open `?presenter=1` or press `D` to show a private cue console with canonical chapter times, talking points, demo actions, fallback lines, and one-click cue jumps. Presenter notes are presentation metadata, not mathematical evidence.
+
 ### Export
 
 Exports:
 
 - canonical provenance JSON
+- deterministic SHA-256 release manifest
 - multi-track MIDI
 - RAW offline WAV
 - MUSICALIZED offline WAV
@@ -261,6 +273,8 @@ When focus is not inside an interactive control:
 | E | Explore Mode |
 | L | Math Lens |
 | P | Performance / Instrument view |
+| D | Presenter cue sheet |
+| ? or / | Interpretation / keyboard guide |
 | F | Fullscreen |
 
 Reduced-motion preference is honored.
@@ -275,8 +289,9 @@ src/
 ├─ composition/   chapters, mappings, canonical score, explore portraits
 ├─ audio/         raw/musical engines, arrangement, coda, auditioner
 ├─ visual/        bifurcation field, orbit history, Math Lens
+├─ presentation/  canonical presenter cue score
 ├─ workers/       bifurcation point generation
-├─ export/        provenance, MIDI, WAV, offline audio
+├─ export/        provenance, release manifest access, MIDI, WAV, offline audio
 ├─ components/    React experience UI
 ├─ styles/        visual system / accessibility
 └─ tests/         deterministic unit and invariant tests
@@ -312,6 +327,8 @@ Read: **[Mathematical Integrity](docs/MATHEMATICAL_INTEGRITY.md)**
 - [Architecture](docs/ARCHITECTURE.md)
 - [Mathematical Integrity](docs/MATHEMATICAL_INTEGRITY.md)
 - [Presentation Guide](docs/PRESENTATION.md)
+- [Live Presentation Runbook](docs/PRESENTATION_RUNBOOK.md)
+- [Submission Checklist](docs/SUBMISSION_CHECKLIST.md)
 - [Audio Review](docs/AUDIO_REVIEW.md)
 - [Device QA](docs/DEVICE_QA.md)
 - [Performance and Visual Regression](docs/PERFORMANCE.md)
