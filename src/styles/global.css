@@ -310,3 +310,28 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--cool); outl
   .plot-fallback dl { grid-template-columns: repeat(2, 1fr); }
   .plot-fallback dl > div:nth-child(2) { border-right: 0; }
 }
+
+
+.render-budget { display: grid; gap: 7px; padding: 10px 11px; border: 1px solid rgba(255,255,255,.07); border-radius: 10px; background: rgba(255,255,255,.012); }
+.render-budget > div { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.render-budget > div span { color: var(--muted); font: 8px/1 monospace; letter-spacing: .12em; }
+.render-budget > div strong { font: 9px/1 monospace; }
+.render-budget--low > div strong { color: #a9d39b; }
+.render-budget--medium > div strong, .render-budget--unknown > div strong { color: #e6c879; }
+.render-budget--high { border-color: rgba(255,152,152,.18); }
+.render-budget--high > div strong { color: #ff9898; }
+.render-budget p { margin: 0; color: var(--muted); font: 9px/1.45 monospace; }
+.render-budget label { display: flex; align-items: center; gap: 7px; color: #e7b8b8; font: 9px/1.25 monospace; cursor: pointer; }
+.audio-diagnostic { padding: 9px 10px; border: 1px solid rgba(255,255,255,.07); border-radius: 10px; background: rgba(255,255,255,.012); }
+.audio-diagnostic summary { cursor: pointer; font-size: 10px; font-weight: 560; }
+.audio-diagnostic[open] { display: grid; gap: 9px; }
+.audio-diagnostic p { margin: 0; color: var(--muted); font: 9px/1.45 monospace; }
+.audio-diagnostic > button { justify-self: start; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; background: rgba(255,255,255,.02); color: var(--text); cursor: pointer; font-size: 9px; }
+.audio-diagnostic > button:disabled { opacity: .45; cursor: progress; }
+.audio-diagnostic__results { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.audio-diagnostic__results > div { display: grid; gap: 4px; padding: 8px; border: 1px solid rgba(169,211,155,.14); border-radius: 8px; background: rgba(169,211,155,.025); }
+.audio-diagnostic__results strong { color: #a9d39b; font: 9px/1 monospace; }
+.audio-diagnostic__results span { color: var(--muted); font: 8px/1.2 monospace; }
+@media (max-width: 560px) {
+  .audio-diagnostic__results { grid-template-columns: 1fr; }
+}
