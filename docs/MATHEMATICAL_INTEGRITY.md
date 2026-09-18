@@ -260,3 +260,45 @@ A reconstruction must preserve at least:
 - chapter form
 
 The provenance JSON preserves these for the canonical work.
+
+
+## 17. Independent numerical verification
+
+The release pipeline does not rely only on the TypeScript implementation testing itself.
+
+A separate Python 3.12 verifier lives at:
+
+```text
+scripts/verify_math.py
+```
+
+It independently implements:
+
+- logistic iteration
+- canonical burn-in
+- finite Lyapunov estimation
+- finite period search
+- regime classification
+
+Frozen references live at:
+
+```text
+fixtures/canonical-math-reference.json
+```
+
+The fixture stores, for every canonical segment:
+
+- `r`
+- detected period
+- finite Lyapunov estimate
+- a post-burn-in orbit prefix
+- the score-facing orbit prefix
+
+CI runs the Python verifier first. Vitest then regenerates the same cases through the TypeScript implementation and compares them with the frozen fixture.
+
+This is deliberately a cross-implementation consistency check, not a proof about the infinite mathematical system.
+
+Special analytical sanity checks include:
+
+- the `r = 2.8` attracting fixed point against `1 - 1/r`
+- the finite `r = 4` Lyapunov estimate against the known `ln(2)` reference within a documented finite-sample tolerance
