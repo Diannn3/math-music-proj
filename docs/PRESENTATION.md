@@ -4,16 +4,16 @@
 
 ### 1. Introduction — 30–45 seconds
 
-Show the equation:
+Show:
 
-[
-x_{n+1}=r x_n(1-x_n)
-]
+```text
+x[n+1] = r * x[n] * (1 - x[n])
+```
 
 Explain only:
 
-- (x_n) is the current state
-- (r) controls the system
+- `x[n]` is the current state
+- `r` controls the system
 - every main audible event comes from an orbit value
 - the plot and sound use the same event
 
@@ -64,7 +64,7 @@ Point out:
 
 Core lesson:
 
-> increasing (r) does not mean chaos simply increases forever.
+> increasing `r` does not mean chaos simply increases forever.
 
 ---
 
@@ -87,7 +87,7 @@ MATHEMATICAL
 Example:
 
 ```text
-x_n
+x[n]
 → continuous frequency
 → RAW sound
 ```
@@ -95,7 +95,7 @@ x_n
 versus:
 
 ```text
-x_n
+x[n]
 → scale bucket
 → D-minor-pentatonic note
 → FM synthesis / bass / halo / effects
@@ -111,12 +111,12 @@ Open Math Lens.
 
 ### Cobweb
 
-Show how an iterate moves:
+Show the iterate path:
 
 ```text
 current x
 → logistic curve
-→ y=x
+→ identity line y = x
 → next x
 ```
 
@@ -124,11 +124,11 @@ current x
 
 Compare:
 
-- (r=3.72)
-- (r=3.83)
-- (r=3.9)
+- `r = 3.72`
+- `r = 3.83`
+- `r = 3.9`
 
-Emphasize sign change rather than raw (r).
+Emphasize the Lyapunov sign and detected period rather than raw `r`.
 
 ---
 
@@ -158,9 +158,9 @@ Recommended:
 
 > Deterministic does not mean predictable.
 
-Then clarify if needed:
+Then clarify:
 
-> The system is deterministic; “chaos” here does not mean random noise.
+> The system is deterministic; "chaos" here does not mean random noise.
 
 ---
 
@@ -180,7 +180,7 @@ Also keep:
 
 If browser audio fails on venue hardware, WAV is the primary fallback.
 
-If WebGL fails, the audio and mathematical explanation can still continue from exported assets and static screenshots.
+If WebGL fails, the audio and mathematical explanation can continue from exported assets and static screenshots.
 
 ---
 
@@ -201,24 +201,24 @@ If WebGL fails, the audio and mathematical explanation can still continue from e
 
 Avoid:
 
-> “These notes are hidden inside the equation.”
+> "These notes are hidden inside the equation."
 
 Use:
 
-> “The equation generates the states; I chose a transparent mapping that turns those states into pitch.”
+> "The equation generates the states; I chose a transparent mapping that turns those states into pitch."
 
 Avoid:
 
-> “At high r everything is chaotic.”
+> "At high r everything is chaotic."
 
 Use:
 
-> “The broad region contains chaotic behavior and periodic windows, including this period-3 island.”
+> "The broad region contains chaotic behavior and periodic windows, including this period-3 island."
 
 Avoid:
 
-> “This is random music.”
+> "This is random music."
 
 Use:
 
-> “The source system is deterministic, although chaotic trajectories can be highly sensitive and difficult to predict.”
+> "The source system is deterministic, although chaotic trajectories can be highly sensitive and difficult to predict."
