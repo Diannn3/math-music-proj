@@ -41,6 +41,11 @@ jobs:
       - name: Verify independent mathematical references
         run: python scripts/verify_math.py
 
+      - name: Verify deterministic release artwork
+        run: |
+          python scripts/generate_release_art.py
+          git diff --exit-code -- public/bifurcate-social.png public/bifurcate-poster.png public/favicon.svg public/site.webmanifest
+
       - name: Run unit tests
         run: npm test
 
