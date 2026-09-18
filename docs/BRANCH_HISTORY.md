@@ -57,3 +57,8 @@ No branch should be described as complete until its feature-specific checks pass
 No automatic merge into `main` is part of this development workflow.
 
 The user/maintainer can review checkpoints independently before choosing a merge strategy.
+
+
+## Final documentation checkpoint
+
+`feature/20-project-documentation` inherits the complete browser-tested application from feature 19 and additionally verifies the durable README and project documentation. The branch passes the same CI pipeline, including Chromium smoke tests.
