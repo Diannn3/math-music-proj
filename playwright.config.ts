@@ -36,6 +36,13 @@ export default defineConfig({
       testIgnore: '**/*.mobile.spec.ts',
       use: {
         ...devices['Desktop Firefox'],
+        launchOptions: {
+          firefoxUserPrefs: {
+            'media.autoplay.default': 0,
+            'media.autoplay.blocking_policy': 0,
+            'media.autoplay.block-webaudio': false,
+          },
+        },
       },
     },
     {
