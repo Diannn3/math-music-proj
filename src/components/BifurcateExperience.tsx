@@ -12,6 +12,12 @@ import ExportPanel from './ExportPanel';
 type AudioMode = 'raw' | 'musicalized';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName;
+  return target.isContentEditable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON';
+}
+
 function formatTime(seconds: number): string {
   const safe = Math.max(0, seconds);
   const minutes = Math.floor(safe / 60);
@@ -169,6 +175,48 @@ export default function BifurcateExperience() {
       setSwitchingMode(false);
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (keyEvent: KeyboardEvent) => {
+      if (isTypingTarget(keyEvent.target)) return;
+
+      const key = keyEvent.key.toLowerCase();
+      if (key === ' ') {
+        keyEvent.preventDefault();
+        if (audioReady && !switchingMode && !auditioning) void togglePlayback();
+        return;
+      }
+
+      if (key === 'r' && !auditioning) {
+        void switchMode('raw');
+        return;
+      }
+
+      if (key === 'm' && !auditioning) {
+        void switchMode('musicalized');
+        return;
+      }
+
+      if (key === 'e' && audioReady && !switchingMode && !auditioning) {
+        if (exploreOpen) closeExplore();
+        else setExploreOpen(true);
+        return;
+      }
+
+      if (key === 'l') {
+        setMathLensOpen((open) => !open);
+        return;
+      }
+
+      if (key === 'f') {
+        if (document.fullscreenElement) void document.exitFullscreen();
+        else void document.documentElement.requestFullscreen?.();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [audioReady, auditioning, exploreOpen, mode, switchingMode, time]);
 
   const progress = Math.min(1, time / score.durationSeconds);
   const primaryReadout = mode === 'raw' ? `${event.raw.frequencyHz.toFixed(2)} Hz` : event.musical.note;
