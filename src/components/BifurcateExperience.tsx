@@ -239,7 +239,7 @@ export default function BifurcateExperience() {
       <section className={`stage stage--${event.regime}`} aria-label="Bifurcation visualization stage">
         <BifurcationField event={event} showBeginOverlay={!audioReady} onBegin={begin} />
         {audioReady ? <OrbitHistory events={score.events} current={event} /> : null}
-        {audioReady && !exploreOpen ? <ChapterCue event={event} /> : null}
+        {audioReady && !exploreOpen ? <ChapterCue key={event.segmentId} event={event} /> : null}
         {audioReady ? (
           <div className="stage-readout" aria-live="polite">
             <span className={`mode-chip mode-chip--${mode}`}>{mode === 'raw' ? 'RAW' : 'MUSICALIZED'}</span>
