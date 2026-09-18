@@ -127,3 +127,38 @@ output { color: var(--muted); min-width: 92px; text-align: right; font: 12px/1 m
   .chapter-nav__track { overflow-x: auto; }
   .chapter-nav__track button { flex-basis: 58px !important; flex-grow: 0 !important; min-width: 58px; }
 }
+
+
+.analysis-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: stretch; }
+.analysis-toggle { min-width: 128px; display: grid; align-content: center; gap: 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); text-align: left; cursor: pointer; }
+.analysis-toggle strong { font-size: 11px; }
+.analysis-toggle span { color: var(--muted); font-size: 9px; }
+.analysis-toggle.is-active { border-color: rgba(230,200,121,.42); background: rgba(230,200,121,.06); }
+.math-lens { display: grid; gap: 10px; padding: 12px; border: 1px solid rgba(230,200,121,.18); border-radius: 14px; background: linear-gradient(180deg, rgba(230,200,121,.025), transparent), var(--surface); }
+.math-lens__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.math-lens__header > div { display: flex; align-items: baseline; gap: 10px; }
+.math-lens__header span { color: #e6c879; font: 9px/1 monospace; letter-spacing: .14em; }
+.math-lens__header strong { font-size: 11px; }
+.math-lens__header button { border: 1px solid var(--border); border-radius: 8px; background: transparent; padding: 6px 9px; color: var(--muted); cursor: pointer; font-size: 10px; }
+.math-lens__grid { display: grid; grid-template-columns: 1fr 1.35fr; gap: 10px; }
+.math-lens-card { min-width: 0; margin: 0; padding: 10px; border: 1px solid rgba(255,255,255,.065); border-radius: 11px; background: rgba(0,0,0,.14); }
+.math-lens-card figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.math-lens-card figcaption span { color: var(--muted); font: 8px/1 monospace; letter-spacing: .12em; }
+.math-lens-card figcaption strong { font: 9px/1 monospace; font-weight: 500; }
+.math-lens-card svg { display: block; width: 100%; height: min(220px, 26vw); min-height: 130px; }
+.math-lens-card p, .lyapunov-legend { margin: 7px 0 0; color: rgba(241,239,232,.4); font: 8px/1.35 monospace; }
+.cobweb-grid { fill: none; stroke: rgba(255,255,255,.14); stroke-width: .45; vector-effect: non-scaling-stroke; }
+.cobweb-curve { fill: none; stroke: rgba(156,184,255,.6); stroke-width: .9; vector-effect: non-scaling-stroke; }
+.cobweb-orbit { fill: none; stroke: rgba(230,200,121,.82); stroke-width: .7; vector-effect: non-scaling-stroke; }
+.lyapunov-zero { stroke: rgba(255,255,255,.18); stroke-width: .5; vector-effect: non-scaling-stroke; }
+.lyapunov-curve { fill: none; stroke: rgba(255,140,118,.72); stroke-width: .85; vector-effect: non-scaling-stroke; }
+.lyapunov-marker { stroke: #f1efe8; stroke-width: .65; vector-effect: non-scaling-stroke; }
+.lyapunov-legend { display: flex; justify-content: space-between; gap: 10px; }
+.math-lens > footer { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font: 9px/1.2 monospace; }
+@media (max-width: 760px) {
+  .analysis-toolbar { grid-template-columns: 1fr; }
+  .analysis-toggle { min-width: 0; }
+  .math-lens__grid { grid-template-columns: 1fr; }
+  .math-lens-card svg { height: 190px; }
+  .math-lens > footer { flex-direction: column; gap: 5px; }
+}
