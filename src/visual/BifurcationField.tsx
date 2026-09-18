@@ -37,6 +37,7 @@ export default function BifurcationField({
   const hostRef = useRef<HTMLDivElement | null>(null);
   const scatterplotRef = useRef<ScatterplotInstance | null>(null);
   const [status, setStatus] = useState<PlotStatus>({ state: 'loading', progress: 0 });
+  const [cameraMoving, setCameraMoving] = useState(false);
   const [profile] = useState(detectVisualQuality);
 
   const frame = cinematic ? getVisualFrame(event.segmentId) : null;
@@ -157,21 +158,29 @@ export default function BifurcationField({
     const scatterplot = scatterplotRef.current;
     if (!scatterplot) return;
 
-    if (!cinematic || !frame) {
-      void scatterplot.zoomToOrigin({
-        transition: true,
-        transitionDuration: 700,
-      });
-      return;
-    }
+    let cancelled = false;
+    setCameraMoving(true);
 
-    void scatterplot.zoomToArea(
-      visualFrameToNdcArea(frame),
-      {
-        transition: true,
-        transitionDuration: frame.transitionMs,
-      },
-    );
+    const move = !cinematic || !frame
+      ? scatterplot.zoomToOrigin({
+          transition: true,
+          transitionDuration: 700,
+        })
+      : scatterplot.zoomToArea(
+          visualFrameToNdcArea(frame),
+          {
+            transition: true,
+            transitionDuration: frame.transitionMs,
+          },
+        );
+
+    void Promise.resolve(move).finally(() => {
+      if (!cancelled) setCameraMoving(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [cinematic, event.segmentId, frame, status.state]);
 
   const axisLeft = frame?.rMin ?? BIFURCATION_R_MIN;
@@ -195,10 +204,14 @@ export default function BifurcationField({
       <div className="plot-axis-label plot-axis-label--x-left">r {axisLeft.toFixed(axisLeft < 3 ? 2 : 3)}</div>
       <div className="plot-axis-label plot-axis-label--x-right">{axisRight.toFixed(axisRight === 4 ? 1 : 3)}</div>
 
-      <div className="active-r-line" style={{ left: active.left }} aria-hidden="true" />
+      <div
+        className={cameraMoving ? 'active-r-line is-camera-moving' : 'active-r-line'}
+        style={{ left: active.left }}
+        aria-hidden="true"
+      />
       <div
         key={event.id}
-        className={`active-event-point active-event-point--${event.regime}`}
+        className={`active-event-point active-event-point--${event.regime}${cameraMoving ? ' is-camera-moving' : ''}`}
         style={active}
         aria-hidden="true"
       />
