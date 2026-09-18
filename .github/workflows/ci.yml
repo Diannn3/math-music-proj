@@ -46,6 +46,11 @@ jobs:
           python scripts/generate_release_art.py
           git diff --exit-code -- public/bifurcate-social.png public/bifurcate-poster.png public/favicon.svg public/site.webmanifest
 
+      - name: Verify deterministic release manifest
+        run: |
+          python scripts/generate_release_manifest.py
+          git diff --exit-code -- public/bifurcate-release-manifest.json
+
       - name: Run unit tests
         run: npm test
 
