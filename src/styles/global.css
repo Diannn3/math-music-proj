@@ -278,7 +278,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--cool); outl
 .shell--performance .stage { min-height: calc(100vh - 172px); border-radius: 22px; }
 .shell--performance .orbit-history { opacity: .58; }
 .shell--performance .stage-readout { bottom: 20px; }
-.performance-hud { position: absolute; z-index: 6; top: 16px; right: 16px; display: flex; gap: 6px; padding: 5px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; background: rgba(8,9,11,.7); backdrop-filter: blur(10px); }
+.performance-hud { position: absolute; z-index: 6; top: 16px; right: 16px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; padding: 5px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; background: rgba(8,9,11,.7); backdrop-filter: blur(10px); }
 .performance-hud button { border: 0; border-radius: 999px; padding: 7px 9px; background: transparent; color: rgba(241,239,232,.62); cursor: pointer; font-size: 9px; }
 .performance-hud button:hover:not(:disabled), .performance-hud button:focus-visible { background: rgba(255,255,255,.055); color: var(--text); }
 .performance-hud button:disabled { opacity: .35; cursor: default; }
