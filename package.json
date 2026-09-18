@@ -10,7 +10,7 @@
     "check": "astro check",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "npm run build && playwright test"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.6",
