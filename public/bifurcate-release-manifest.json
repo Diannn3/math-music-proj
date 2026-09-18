@@ -1,0 +1,114 @@
+{
+  "canonicalScore": {
+    "bars": 92,
+    "burnIn": 4096,
+    "durationSeconds": 230,
+    "equation": "x[n+1] = r*x[n]*(1-x[n])",
+    "mappingVersion": "1.0.0",
+    "meter": "4/4",
+    "primaryEventCount": 736,
+    "scoreVersion": "0.1.0",
+    "tempoBpm": 96,
+    "x0": 0.2
+  },
+  "canonicalSegments": [
+    {
+      "detectedPeriod": 1,
+      "expectedRegime": "periodic",
+      "id": "equilibrium",
+      "r": 2.8
+    },
+    {
+      "detectedPeriod": 2,
+      "expectedRegime": "periodic",
+      "id": "split",
+      "r": 3.2
+    },
+    {
+      "detectedPeriod": 4,
+      "expectedRegime": "periodic",
+      "id": "four",
+      "r": 3.5
+    },
+    {
+      "detectedPeriod": 8,
+      "expectedRegime": "periodic",
+      "id": "cascade-8",
+      "r": 3.55
+    },
+    {
+      "detectedPeriod": 16,
+      "expectedRegime": "periodic",
+      "id": "cascade-16",
+      "r": 3.568
+    },
+    {
+      "detectedPeriod": 64,
+      "expectedRegime": "periodic",
+      "id": "cascade-high",
+      "r": 3.5698
+    },
+    {
+      "detectedPeriod": null,
+      "expectedRegime": "chaotic",
+      "id": "break",
+      "r": 3.72
+    },
+    {
+      "detectedPeriod": 3,
+      "expectedRegime": "periodic",
+      "id": "island",
+      "r": 3.83
+    },
+    {
+      "detectedPeriod": null,
+      "expectedRegime": "chaotic",
+      "id": "return",
+      "r": 3.9
+    },
+    {
+      "detectedPeriod": null,
+      "expectedRegime": "chaotic",
+      "id": "limit",
+      "r": 4.0
+    }
+  ],
+  "hashAlgorithm": "sha256",
+  "integrity": [
+    "The manifest hashes source inputs and release assets; it does not claim a deployed host is valid.",
+    "RAW and MUSICALIZED modes use the same canonical mathematical event stream.",
+    "Independent Python mathematical references remain the numerical cross-check.",
+    "External hosting must pass the separate external-release workflow before being called verified."
+  ],
+  "presentation": {
+    "centerpiece": "period-3 window near r=3.83",
+    "offlinePoster": "public/bifurcate-poster.png",
+    "presenterMode": "?presenter=1 or D",
+    "socialImage": "public/bifurcate-social.png"
+  },
+  "project": "BIFURCATE \u2014 Hearing the Logistic Map",
+  "releaseAssets": {
+    "public/bifurcate-poster.png": "651510d57418da91a407549c6949004e5cc5e0f7129c56abfcf898ca8a173472",
+    "public/bifurcate-social.png": "5667819ba0056b3866647fe29b5210f52ae6c72c55dc3a05884828f77e425a7a",
+    "public/favicon.svg": "135416ac7a5e76be3ec0290e9178d9b1c148987951bf6a9c9d4dd54dc9c3b112",
+    "public/site.webmanifest": "1944b5885fda68eb99526684f77a3c72fa4872275785ff3fa4f32621bb8c06ce"
+  },
+  "schema": "bifurcate.release-manifest.v1",
+  "sourceInputs": {
+    "fixtures/canonical-math-reference.json": "4a9c03c0ca278d47ea1bf6954a959add510fcc813b8c3ae0a3981979db207ad0",
+    "package-lock.json": "2780b00b823be7a4a00650c24e3c88de91c44af3e8867f06979f641615806ded",
+    "src/audio/MusicalAudioEngine.ts": "0d80a47689906fb73bebd343d2b43f1498a6b920f9ad74d83f077a9e4634d635",
+    "src/audio/RawAudioEngine.ts": "5e68ff9398fba317534e9cb21cd47f4b695f80dca2d929ef03a9a666940c7d6a",
+    "src/audio/releaseAudio.ts": "3fa25e8f72dbdb10500e38a7200009a64d3bc97e662157171a416d9dd2240880",
+    "src/composition/chapters.ts": "e762a047f2f7a5b21df7510a01391d27f45de4474136eb403004bb1f43daede7",
+    "src/composition/generateScore.ts": "22d2da899312f36a1af6820cd0ee53ed298e6c3f85e5ea481210f3f288591043",
+    "src/composition/mapping.ts": "079e1f1f03e53ea0d4c16697287e1e12788bcbebbc03b164fdba2de6ad41d76e",
+    "src/export/provenance.ts": "786e193a90fa33e7c731eec7f643e7347daf7366b0a95ce86b4bd3d2c28a8de4",
+    "src/math/classify.ts": "aeca9c5ef89bb268893d325923c7af7532778b1172e76d2d31c7f5c102539918",
+    "src/math/logistic.ts": "e1e97a63246e461429898372b116ca09e53145903f882db09bfd480890ca9e20",
+    "src/math/lyapunov.ts": "9eeb611a608dad9ca384c2256964a1292b206befbb33b53a30ba7a22cd3f394b",
+    "src/math/period.ts": "33b242b66f8c0ea61c0e4f9e52483e0cea36e83068bc5f344f526b7e51ac9bd5",
+    "src/presentation/cues.ts": "2aca8f67f4c112aced5a3aae050466d07796518ac3099fae4ed8d73d4c83c2cc",
+    "src/visual/visualScore.ts": "91b05cf72c0464889e39ed17045605732e2235255eab5c03dc5f9dbea972ef51"
+  }
+}
