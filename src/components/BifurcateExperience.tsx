@@ -221,9 +221,19 @@ export default function BifurcateExperience() {
 
   useEffect(() => {
     const handleKeyDown = (keyEvent: KeyboardEvent) => {
+      const key = keyEvent.key.toLowerCase();
+
+      // Help must remain available even when keyboard focus is on another
+      // non-text control. This is especially important for keyboard users
+      // moving through the interface with Tab.
+      if (key === '?' || (key === '/' && keyEvent.shiftKey)) {
+        keyEvent.preventDefault();
+        setGuideOpen((open) => !open);
+        return;
+      }
+
       if (isTypingTarget(keyEvent.target)) return;
 
-      const key = keyEvent.key.toLowerCase();
       if (key === ' ') {
         keyEvent.preventDefault();
         if (audioReady && !switchingMode && !auditioning) void togglePlayback();
