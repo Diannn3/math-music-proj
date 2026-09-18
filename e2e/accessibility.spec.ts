@@ -28,9 +28,9 @@ test('question-mark shortcut toggles the interpretation guide', async ({ page },
   test.skip(testInfo.project.name !== 'chromium', 'Keyboard shortcut semantics are exercised once in Chromium.');
 
   await page.goto('/');
-  await page.keyboard.press('Shift+/');
+  await page.keyboard.press('/');
   await expect(page.locator('.interpretation-guide')).toBeVisible();
-  await page.keyboard.press('Shift+/');
+  await page.keyboard.press('/');
   await expect(page.locator('.interpretation-guide')).toHaveCount(0);
 });
 
