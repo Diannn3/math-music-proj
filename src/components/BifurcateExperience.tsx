@@ -4,6 +4,7 @@ import { generateCanonicalScore } from '../composition';
 import type { MathMusicEvent } from '../composition';
 import { BifurcationField, OrbitHistory } from '../visual';
 import MappingInspector from './MappingInspector';
+import ChapterNavigator from './ChapterNavigator';
 
 type AudioMode = 'raw' | 'musicalized';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
@@ -89,6 +90,15 @@ export default function BifurcateExperience() {
     setTime(0);
   };
 
+  const seekToChapter = (startSeconds: number) => {
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    engine.seek(startSeconds);
+    setTime(startSeconds);
+    setEvent(findEventAtTime(score, startSeconds));
+  };
+
   const switchMode = async (nextMode: AudioMode) => {
     if (nextMode === mode || switchingMode) return;
     setSwitchingMode(true);
@@ -160,6 +170,12 @@ export default function BifurcateExperience() {
             <span>D-minor pentatonic + artistic layers</span>
           </button>
         </div>
+
+        <ChapterNavigator
+          currentSegmentId={event.segmentId}
+          disabled={!audioReady || switchingMode}
+          onSelect={seekToChapter}
+        />
 
         <MappingInspector event={event} mode={mode} />
 
