@@ -11,6 +11,7 @@ import ExportPanel from './ExportPanel';
 import ChapterCue from './ChapterCue';
 
 type AudioMode = 'raw' | 'musicalized';
+type ExperienceView = 'performance' | 'instrument';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
 
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -36,6 +37,7 @@ export default function BifurcateExperience() {
   const auditionerRef = useRef<ParameterAuditioner | null>(null);
   const clockRef = useRef<number | null>(null);
   const [mode, setMode] = useState<AudioMode>('raw');
+  const [view, setView] = useState<ExperienceView>('performance');
   const [audioReady, setAudioReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [switchingMode, setSwitchingMode] = useState(false);
@@ -247,6 +249,16 @@ export default function BifurcateExperience() {
         return;
       }
 
+      if (key === 'p') {
+        setView((current) => current === 'performance' ? 'instrument' : 'performance');
+        return;
+      }
+
+      if (key === 'escape') {
+        setView('instrument');
+        return;
+      }
+
       if (key === 'f') {
         if (document.fullscreenElement) void document.exitFullscreen();
         else void document.documentElement.requestFullscreen?.();
@@ -271,20 +283,61 @@ export default function BifurcateExperience() {
       : `bucket ${event.musical.bucket + 1}/15 · Δ ${event.delta >= 0 ? '+' : ''}${event.delta.toFixed(4)}`;
 
   return (
-    <main className="shell">
+    <main className={`shell shell--${view}`}>
       <header className="hero">
         <div>
           <p className="eyebrow">MATHEMATICAL MUSIC / A-B SONIFICATION</p>
           <h1>BIFURCATE</h1>
           <p className="subtitle">Hearing the Logistic Map</p>
         </div>
-        <code>x[n+1] = r · x[n] · (1 − x[n])</code>
+        <div className="hero-meta">
+          <code>x[n+1] = r · x[n] · (1 − x[n])</code>
+          <div className="view-switch" role="group" aria-label="Experience view">
+            <button
+              type="button"
+              className={view === 'performance' ? 'is-active' : ''}
+              aria-pressed={view === 'performance'}
+              onClick={() => setView('performance')}
+            >
+              Performance
+            </button>
+            <button
+              type="button"
+              className={view === 'instrument' ? 'is-active' : ''}
+              aria-pressed={view === 'instrument'}
+              onClick={() => setView('instrument')}
+            >
+              Instrument
+            </button>
+          </div>
+        </div>
       </header>
 
       <section className={`stage stage--${event.regime}`} aria-label="Bifurcation visualization stage">
-        <BifurcationField event={event} showBeginOverlay={!audioReady} onBegin={begin} />
+        <BifurcationField
+          event={event}
+          showBeginOverlay={!audioReady}
+          onBegin={begin}
+          cinematic={view === 'performance' && audioReady}
+        />
         {audioReady ? <OrbitHistory events={score.events} current={event} /> : null}
         {audioReady && !exploreOpen ? <ChapterCue key={event.segmentId} event={event} /> : null}
+        {audioReady && view === 'performance' ? (
+          <div className="performance-hud" aria-label="Performance controls">
+            <button type="button" onClick={togglePlayback} disabled={switchingMode}>
+              {playing ? 'Pause' : 'Play'}
+            </button>
+            <button
+              type="button"
+              disabled={switchingMode || auditioning}
+              onClick={() => void switchMode(mode === 'raw' ? 'musicalized' : 'raw')}
+            >
+              {mode === 'raw' ? 'Hear musicalized' : 'Hear raw'}
+            </button>
+            <button type="button" onClick={() => setView('instrument')}>Open instrument</button>
+          </div>
+        ) : null}
+
         {audioReady ? (
           <div className="stage-readout" aria-live="polite">
             <span className={`mode-chip mode-chip--${mode}`}>
@@ -296,6 +349,7 @@ export default function BifurcateExperience() {
         ) : null}
       </section>
 
+      {view === 'instrument' ? (
       <section className="transport-panel" aria-label="Playback controls">
         <div className="mode-switch" role="group" aria-label="Sonification mode">
           <button type="button" className={mode === 'raw' ? 'is-active' : ''} aria-pressed={mode === 'raw'} disabled={switchingMode || auditioning} onClick={() => void switchMode('raw')}>
@@ -381,6 +435,9 @@ export default function BifurcateExperience() {
         </div>
         {error ? <p className="error-message">{error}</p> : null}
       </section>
+      ) : (
+        error ? <p className="error-message error-message--performance">{error}</p> : null
+      )}
     </main>
   );
 }
