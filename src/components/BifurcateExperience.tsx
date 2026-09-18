@@ -9,6 +9,7 @@ import MathLens from './MathLens';
 import ExplorePanel from './ExplorePanel';
 import ExportPanel from './ExportPanel';
 import ChapterCue from './ChapterCue';
+import InterpretationGuide from './InterpretationGuide';
 
 type AudioMode = 'raw' | 'musicalized';
 type ExperienceView = 'performance' | 'instrument';
@@ -45,6 +46,7 @@ export default function BifurcateExperience() {
   const [exploreOpen, setExploreOpen] = useState(false);
   const [auditioning, setAuditioning] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [time, setTime] = useState(0);
   const [event, setEvent] = useState<MathMusicEvent>(() => score.events[0]);
   const [error, setError] = useState<string | null>(null);
@@ -244,6 +246,11 @@ export default function BifurcateExperience() {
         return;
       }
 
+      if (key === '?') {
+        setGuideOpen((open) => !open);
+        return;
+      }
+
       if (key === 'l') {
         setMathLensOpen((open) => !open);
         return;
@@ -292,6 +299,16 @@ export default function BifurcateExperience() {
         </div>
         <div className="hero-meta">
           <code>x[n+1] = r · x[n] · (1 − x[n])</code>
+          <div className="hero-actions">
+          <button
+            type="button"
+            className="guide-button"
+            aria-expanded={guideOpen}
+            aria-controls="interpretation-guide"
+            onClick={() => setGuideOpen((open) => !open)}
+          >
+            How to read this
+          </button>
           <div className="view-switch" role="group" aria-label="Experience view">
             <button
               type="button"
@@ -310,8 +327,15 @@ export default function BifurcateExperience() {
               Instrument
             </button>
           </div>
+          </div>
         </div>
       </header>
+
+      {guideOpen ? (
+        <div id="interpretation-guide">
+          <InterpretationGuide onClose={() => setGuideOpen(false)} />
+        </div>
+      ) : null}
 
       <section className={`stage stage--${event.regime}`} aria-label="Bifurcation visualization stage">
         <BifurcationField
@@ -428,7 +452,15 @@ export default function BifurcateExperience() {
         <div className="transport-row">
           <button type="button" onClick={togglePlayback} disabled={!audioReady || switchingMode}>{playing ? 'Pause' : 'Play'}</button>
           <button type="button" onClick={stop} disabled={!audioReady || switchingMode}>Stop</button>
-          <div className="timeline" aria-label={`Playback ${Math.round(progress * 100)} percent`}>
+          <div
+            className="timeline"
+            role="progressbar"
+            aria-label="Playback progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(progress * 100)}
+            aria-valuetext={`${formatTime(time)} of ${formatTime(score.durationSeconds)}`}
+          >
             <div className="timeline-fill" style={{ transform: `scaleX(${progress})` }} />
           </div>
           <output>{formatTime(time)} / {formatTime(score.durationSeconds)}</output>
