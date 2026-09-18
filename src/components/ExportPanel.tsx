@@ -5,6 +5,8 @@ import {
   downloadText,
   scoreToMidiBytes,
   scoreToProvenanceJson,
+  renderScoreOffline,
+  audioBufferToWaveBytes,
 } from '../export';
 
 type Props = {
@@ -14,6 +16,7 @@ type Props = {
 
 export default function ExportPanel({ score, onClose }: Props) {
   const [status, setStatus] = useState<string | null>(null);
+  const [rendering, setRendering] = useState<'raw' | 'musicalized' | null>(null);
 
   const exportJson = () => {
     downloadText(
@@ -31,6 +34,22 @@ export default function ExportPanel({ score, onClose }: Props) {
       'audio/midi',
     );
     setStatus('Multi-track MIDI exported.');
+  };
+
+  const exportWav = async (mode: 'raw' | 'musicalized') => {
+    if (rendering) return;
+    try {
+      setRendering(mode);
+      setStatus(`Rendering ${mode} audio offline…`);
+      const buffer = await renderScoreOffline(score, mode);
+      const bytes = audioBufferToWaveBytes(buffer);
+      downloadBytes(bytes, `BIFURCATE-${mode}.wav`, 'audio/wav');
+      setStatus(`${mode === 'raw' ? 'Raw' : 'Musicalized'} WAV exported.`);
+    } catch (caught) {
+      setStatus(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setRendering(null);
+    }
   };
 
   return (
@@ -52,11 +71,19 @@ export default function ExportPanel({ score, onClose }: Props) {
           <strong>Musicalized MIDI</strong>
           <span>lead · bass · halo · drone · transient approximation</span>
         </button>
+        <button type="button" disabled={rendering !== null} onClick={() => void exportWav('raw')}>
+          <strong>{rendering === 'raw' ? 'Rendering RAW…' : 'RAW WAV'}</strong>
+          <span>offline continuous-frequency sonification · PCM16</span>
+        </button>
+        <button type="button" disabled={rendering !== null} onClick={() => void exportWav('musicalized')}>
+          <strong>{rendering === 'musicalized' ? 'Rendering music…' : 'Musicalized WAV'}</strong>
+          <span>offline Tone.js synthesis + reverb tail · PCM16</span>
+        </button>
       </div>
 
       <p>
         MIDI stores musical event/control data, not the rendered Tone.js sound.
-        JSON is the canonical reconstruction record.
+        WAV is rendered offline from the same deterministic score. JSON remains the canonical reconstruction record.
       </p>
       {status ? <output aria-live="polite">{status}</output> : null}
     </section>
