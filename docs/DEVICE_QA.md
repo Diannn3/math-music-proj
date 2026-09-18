@@ -61,3 +61,18 @@ A missing enhanced capability should degrade clearly:
 - reduced-motion preference → suppress cinematic transitions without changing data
 
 Do not hide a compatibility failure behind a generic loading state.
+
+
+### Full WAV memory behavior
+
+The Export panel presents an estimated PCM working set before a full 230-second render.
+
+The estimate includes:
+
+- stereo Float32 `AudioBuffer` sample storage
+- stereo PCM16 output bytes
+- a fixed 32 MiB safety allowance
+
+It does **not** claim to predict the browser's complete synthesis-graph or JavaScript heap usage.
+
+If the Device Memory API reports a high-risk device, full WAV buttons remain blocked until the user explicitly opts in. JSON, MIDI, playback and short diagnostics remain available.
