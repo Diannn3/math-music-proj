@@ -48,7 +48,14 @@ jobs:
             sleep 10
           done
           test "$status" = "200"
-          grep -q "BIFURCATE" /tmp/bifurcate-rc.html
+          if ! grep -q "BIFURCATE" /tmp/bifurcate-rc.html; then
+            echo "::error::HTTP 200 response does not contain BIFURCATE markup."
+            echo "----- response preview -----"
+            head -c 1600 /tmp/bifurcate-rc.html | tr '\n' ' '
+            echo
+            echo "----- end preview -----"
+            exit 1
+          fi
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
