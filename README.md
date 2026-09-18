@@ -153,7 +153,11 @@ Changing quality changes rendering density only. It does not alter the score or 
 
 ### Performance
 
-Play the canonical 3:50 composition with synchronized mathematical visualization.
+The default view is a cinematic presentation surface: the plot camera deterministically frames the active chapter's `r` region while the mathematical data remain unchanged. Only a minimal playback/mode HUD stays on-screen.
+
+### Instrument
+
+The scientific workbench exposes chapter navigation, RAW/MUSICALIZED A/B controls, Math Lens, Explore Mode, mapping provenance, state readouts, and exports.
 
 ### RAW ↔ MUSICALIZED comparison
 
@@ -256,6 +260,7 @@ When focus is not inside an interactive control:
 | M | MUSICALIZED mode |
 | E | Explore Mode |
 | L | Math Lens |
+| P | Performance / Instrument view |
 | F | Fullscreen |
 
 Reduced-motion preference is honored.
