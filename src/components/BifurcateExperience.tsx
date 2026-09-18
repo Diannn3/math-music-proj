@@ -10,6 +10,7 @@ import ExplorePanel from './ExplorePanel';
 import ExportPanel from './ExportPanel';
 import ChapterCue from './ChapterCue';
 import InterpretationGuide from './InterpretationGuide';
+import { isHelpShortcut } from './keyboard';
 
 type AudioMode = 'raw' | 'musicalized';
 type ExperienceView = 'performance' | 'instrument';
@@ -224,8 +225,8 @@ export default function BifurcateExperience() {
       const key = keyEvent.key.toLowerCase();
 
       // Help remains available while keyboard focus is on non-text controls.
-      // Accept both "/" and "?" so the shortcut works across keyboard layouts.
-      if (key === '?' || key === '/' || keyEvent.code === 'Slash') {
+      // Accept both "/" and "?" plus the physical Slash code for layout tolerance.
+      if (isHelpShortcut(keyEvent)) {
         keyEvent.preventDefault();
         setGuideOpen((open) => !open);
         return;
