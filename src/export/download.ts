@@ -1,9 +1,20 @@
+type DownloadData = BlobPart | Uint8Array<ArrayBufferLike>;
+
+function toBlobPart(data: DownloadData): BlobPart {
+  if (data instanceof Uint8Array) {
+    const copy = new Uint8Array(data.byteLength);
+    copy.set(data);
+    return copy.buffer;
+  }
+  return data;
+}
+
 export function downloadBytes(
-  bytes: BlobPart,
+  bytes: DownloadData,
   filename: string,
   mimeType: string,
 ): void {
-  const blob = new Blob([bytes], { type: mimeType });
+  const blob = new Blob([toBlobPart(bytes)], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
