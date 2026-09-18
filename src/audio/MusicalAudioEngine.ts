@@ -14,6 +14,7 @@ import {
   reverbWetForRegime,
 } from './musicalArrangement';
 import { clampScoreTime } from './timeline';
+import { codaStateForEvent } from './coda';
 
 export type MusicalAudioEventCallback = (event: MathMusicEvent, audioTime: number) => void;
 
@@ -30,6 +31,7 @@ export class MusicalAudioEngine {
   private halo: Tone.PolySynth | null = null;
   private drone: Tone.PolySynth | null = null;
   private transient: Tone.NoiseSynth | null = null;
+  private rawCoda: Tone.Synth | null = null;
   private reverb: Tone.Reverb | null = null;
   private compressor: Tone.Compressor | null = null;
   private limiter: Tone.Limiter | null = null;
@@ -104,6 +106,12 @@ export class MusicalAudioEngine {
       volume: -28,
     }).connect(this.compressor);
 
+    this.rawCoda = new Tone.Synth({
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.004, decay: 0.02, sustain: 0.95, release: 0.025 },
+      volume: -10,
+    }).connect(this.compressor);
+
     this.transport.bpm.value = this.score.tempoBpm;
     this.transport.timeSignature = 4;
   }
@@ -114,26 +122,44 @@ export class MusicalAudioEngine {
 
     for (const event of this.score.events) {
       const id = this.transport.schedule((time) => {
+        const coda = codaStateForEvent(event);
         const duration = durationForArticulation(event.musical.articulation, EVENT_INTERVAL_SECONDS);
         this.leadPanner?.pan.setValueAtTime(event.musical.pan, time);
         this.lead?.modulationIndex.setValueAtTime(modulationIndexForRegime(event.regime), time);
         this.reverb?.wet.setValueAtTime(reverbWetForRegime(event.regime), time);
-        this.lead?.triggerAttackRelease(event.musical.note, duration, time, event.musical.velocity);
 
-        if (event.musical.bassTrigger) {
+        if (coda.musicalMix > 0) {
+          this.lead?.triggerAttackRelease(
+            event.musical.note,
+            duration,
+            time,
+            event.musical.velocity * coda.musicalMix,
+          );
+        }
+
+        if (coda.rawMix > 0) {
+          this.rawCoda?.triggerAttackRelease(
+            event.raw.frequencyHz,
+            event.durationSeconds,
+            time,
+            event.raw.velocity * coda.rawMix,
+          );
+        }
+
+        if (event.musical.bassTrigger && coda.bass) {
           const bassNote = midiToNoteName(foldMidiToBass(event.musical.midi));
           this.bass?.triggerAttackRelease(bassNote, EVENT_INTERVAL_SECONDS * 1.45, time, Math.min(0.72, event.musical.velocity * 0.78));
         }
 
-        if (event.musical.haloTrigger) {
+        if (event.musical.haloTrigger && coda.halo) {
           this.halo?.triggerAttackRelease(event.musical.note, EVENT_INTERVAL_SECONDS * 3.1, time, 0.18 + event.musical.velocity * 0.15);
         }
 
-        if (event.globalIndex % EVENTS_PER_BAR === 0) {
+        if (event.globalIndex % EVENTS_PER_BAR === 0 && coda.drone) {
           this.drone?.triggerAttackRelease([...DRONE_NOTES], EVENT_INTERVAL_SECONDS * EVENTS_PER_BAR * 0.92, time, 0.11);
         }
 
-        if (event.musical.transientTrigger) {
+        if (event.musical.transientTrigger && coda.transient) {
           this.transient?.triggerAttackRelease(0.045, time, Math.min(0.34, 0.12 + Math.abs(event.delta) * 0.22));
         }
 
@@ -174,6 +200,7 @@ export class MusicalAudioEngine {
     this.halo?.dispose();
     this.drone?.dispose();
     this.transient?.dispose();
+    this.rawCoda?.dispose();
     this.reverb?.dispose();
     this.compressor?.dispose();
     this.limiter?.dispose();
@@ -183,6 +210,7 @@ export class MusicalAudioEngine {
     this.halo = null;
     this.drone = null;
     this.transient = null;
+    this.rawCoda = null;
     this.reverb = null;
     this.compressor = null;
     this.limiter = null;
