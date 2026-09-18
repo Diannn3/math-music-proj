@@ -33,6 +33,14 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Use Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify independent mathematical references
+        run: python scripts/verify_math.py
+
       - name: Run unit tests
         run: npm test
 
