@@ -25,7 +25,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: '**/*.mobile.spec.ts',
+      testIgnore: ['**/*.mobile.spec.ts', '**/external-release.spec.ts'],
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: chromiumLaunch,
@@ -55,6 +55,7 @@ export default defineConfig({
     {
       name: 'mobile-chromium',
       testMatch: '**/*.mobile.spec.ts',
+      testIgnore: '**/external-release.spec.ts',
       use: {
         ...devices['Pixel 5'],
         launchOptions: chromiumLaunch,
