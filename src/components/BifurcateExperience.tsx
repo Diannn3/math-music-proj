@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MusicalAudioEngine, ParameterAuditioner, RawAudioEngine, findEventAtTime } from '../audio';
+import { MusicalAudioEngine, ParameterAuditioner, RawAudioEngine, codaStateForEvent, findEventAtTime } from '../audio';
 import { generateCanonicalScore } from '../composition';
 import type { MathMusicEvent, ParameterPortrait } from '../composition';
 import { BifurcationField, OrbitHistory } from '../visual';
@@ -220,10 +220,17 @@ export default function BifurcateExperience() {
   }, [audioReady, auditioning, exploreOpen, mode, switchingMode, time]);
 
   const progress = Math.min(1, time / score.durationSeconds);
-  const primaryReadout = mode === 'raw' ? `${event.raw.frequencyHz.toFixed(2)} Hz` : event.musical.note;
+  const coda = mode === 'musicalized' ? codaStateForEvent(event) : null;
+  const primaryReadout = mode === 'raw'
+    ? `${event.raw.frequencyHz.toFixed(2)} Hz`
+    : coda?.active
+      ? `${event.musical.note} → ${event.raw.frequencyHz.toFixed(1)} Hz`
+      : event.musical.note;
   const secondaryReadout = mode === 'raw'
     ? `x = ${event.x.toFixed(6)}`
-    : `bucket ${event.musical.bucket + 1}/15 · Δ ${event.delta >= 0 ? '+' : ''}${event.delta.toFixed(4)}`;
+    : coda?.active
+      ? `RAW crossfade ${Math.round(coda.rawMix * 100)}% · artistic layers stripping`
+      : `bucket ${event.musical.bucket + 1}/15 · Δ ${event.delta >= 0 ? '+' : ''}${event.delta.toFixed(4)}`;
 
   return (
     <main className="shell">
@@ -242,7 +249,9 @@ export default function BifurcateExperience() {
         {audioReady && !exploreOpen ? <ChapterCue key={event.segmentId} event={event} /> : null}
         {audioReady ? (
           <div className="stage-readout" aria-live="polite">
-            <span className={`mode-chip mode-chip--${mode}`}>{mode === 'raw' ? 'RAW' : 'MUSICALIZED'}</span>
+            <span className={`mode-chip mode-chip--${mode}`}>
+              {mode === 'raw' ? 'RAW' : coda?.active ? 'MUSICALIZED → RAW' : 'MUSICALIZED'}
+            </span>
             <strong>{primaryReadout}</strong>
             <span>{secondaryReadout}</span>
           </div>
