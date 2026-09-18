@@ -277,7 +277,12 @@ export default function BifurcateExperience() {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    document.documentElement.dataset.bifurcateShortcutsReady = 'true';
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      delete document.documentElement.dataset.bifurcateShortcutsReady;
+    };
   }, [audioReady, auditioning, exploreOpen, mode, switchingMode]);
 
   const progress = Math.min(1, time / score.durationSeconds);
