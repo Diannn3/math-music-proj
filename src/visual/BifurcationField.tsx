@@ -46,6 +46,10 @@ export default function BifurcationField({ event, showBeginOverlay = false, onBe
         setStatus({ state: 'loading', progress: message.data.progress });
         return;
       }
+      if (message.data.type === 'error') {
+        setStatus({ state: 'error', message: String(message.data.message) });
+        return;
+      }
       if (message.data.type === 'complete' && scatterplot) {
         const { x, y, pointCount } = message.data as { x: Float32Array; y: Float32Array; pointCount: number };
         void Promise.resolve(scatterplot.draw({ x, y })).then(() => {
