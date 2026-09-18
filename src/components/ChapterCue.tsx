@@ -18,7 +18,7 @@ export default function ChapterCue({ event }: { event: MathMusicEvent }) {
   if (!cue) return null;
 
   return (
-    <div key={event.segmentId} className="chapter-cue" aria-live="polite">
+    <div key={event.segmentId} className={`chapter-cue chapter-cue--${event.segmentId}`} aria-live="polite">
       <span>{cue.title}</span>
       <strong>{cue.detail}</strong>
     </div>
