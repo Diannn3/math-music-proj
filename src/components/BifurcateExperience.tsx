@@ -5,6 +5,7 @@ import type { MathMusicEvent } from '../composition';
 import { BifurcationField, OrbitHistory } from '../visual';
 import MappingInspector from './MappingInspector';
 import ChapterNavigator from './ChapterNavigator';
+import MathLens from './MathLens';
 
 type AudioMode = 'raw' | 'musicalized';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
@@ -28,6 +29,7 @@ export default function BifurcateExperience() {
   const [audioReady, setAudioReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [switchingMode, setSwitchingMode] = useState(false);
+  const [mathLensOpen, setMathLensOpen] = useState(false);
   const [time, setTime] = useState(0);
   const [event, setEvent] = useState<MathMusicEvent>(() => score.events[0]);
   const [error, setError] = useState<string | null>(null);
@@ -171,11 +173,24 @@ export default function BifurcateExperience() {
           </button>
         </div>
 
-        <ChapterNavigator
-          currentSegmentId={event.segmentId}
-          disabled={!audioReady || switchingMode}
-          onSelect={seekToChapter}
-        />
+        <div className="analysis-toolbar">
+          <ChapterNavigator
+            currentSegmentId={event.segmentId}
+            disabled={!audioReady || switchingMode}
+            onSelect={seekToChapter}
+          />
+          <button
+            type="button"
+            className={mathLensOpen ? 'analysis-toggle is-active' : 'analysis-toggle'}
+            aria-pressed={mathLensOpen}
+            onClick={() => setMathLensOpen((open) => !open)}
+          >
+            <strong>Math Lens</strong>
+            <span>cobweb + Lyapunov</span>
+          </button>
+        </div>
+
+        {mathLensOpen ? <MathLens event={event} onClose={() => setMathLensOpen(false)} /> : null}
 
         <MappingInspector event={event} mode={mode} />
 
