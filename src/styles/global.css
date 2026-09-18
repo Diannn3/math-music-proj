@@ -268,3 +268,30 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--cool); outl
   .audio-qc dl { grid-template-columns: repeat(3, 1fr); }
   .audio-qc dl > div:nth-child(3) { border-right: 0; }
 }
+
+
+.hero-meta { display: grid; justify-items: end; gap: 12px; }
+.view-switch { display: grid; grid-template-columns: repeat(2, auto); gap: 4px; padding: 3px; border: 1px solid var(--border); border-radius: 999px; background: rgba(255,255,255,.018); }
+.view-switch button { border: 0; border-radius: 999px; padding: 6px 9px; background: transparent; color: var(--muted); cursor: pointer; font-size: 9px; }
+.view-switch button.is-active { background: rgba(156,184,255,.1); color: var(--text); }
+.shell--performance { grid-template-rows: auto minmax(0, 1fr); min-height: 100vh; }
+.shell--performance .stage { min-height: calc(100vh - 172px); border-radius: 22px; }
+.shell--performance .orbit-history { opacity: .58; }
+.shell--performance .stage-readout { bottom: 20px; }
+.performance-hud { position: absolute; z-index: 6; top: 16px; right: 16px; display: flex; gap: 6px; padding: 5px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; background: rgba(8,9,11,.7); backdrop-filter: blur(10px); }
+.performance-hud button { border: 0; border-radius: 999px; padding: 7px 9px; background: transparent; color: rgba(241,239,232,.62); cursor: pointer; font-size: 9px; }
+.performance-hud button:hover:not(:disabled), .performance-hud button:focus-visible { background: rgba(255,255,255,.055); color: var(--text); }
+.performance-hud button:disabled { opacity: .35; cursor: default; }
+.bifurcation-field--cinematic .plot-status { opacity: .42; }
+.active-r-line, .active-event-point { transition: opacity 120ms ease; }
+.active-r-line.is-camera-moving, .active-event-point.is-camera-moving { opacity: 0; }
+.error-message--performance { position: fixed; z-index: 20; left: 50%; bottom: 18px; transform: translateX(-50%); padding: 8px 11px; border: 1px solid rgba(255,152,152,.2); border-radius: 9px; background: rgba(8,9,11,.9); }
+@media (max-width: 760px) {
+  .hero { align-items: start; }
+  .hero-meta { gap: 8px; }
+  .hero-meta code { display: none; }
+  .shell--performance { padding: 14px; gap: 12px; }
+  .shell--performance .stage { min-height: calc(100vh - 130px); }
+  .performance-hud { top: 10px; right: 10px; max-width: calc(100% - 20px); }
+  .performance-hud button { padding: 6px 7px; font-size: 8px; }
+}
