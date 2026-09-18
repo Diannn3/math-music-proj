@@ -90,7 +90,7 @@ event identity
 chapter / segment
 r
 x_n
-x_(n-1)
+x[n-1]
 delta
 lambda
 detected period
@@ -230,8 +230,8 @@ The worker caps a request at one million points.
 
 Separate from the static point cloud:
 
-- active (r) line
-- active ((r,x)) event marker
+- active `r` line
+- active `(r, x)` event marker
 - chapter cue
 - orbit-history strip
 - labels/readouts
