@@ -8,6 +8,7 @@ import {
   durationForArticulation,
   foldMidiToBass,
 } from '../audio/musicalArrangement';
+import { codaStateForEvent, frequencyToNearestMidi } from '../audio/coda';
 
 const DRONE_MIDI = [38, 45] as const; // D2, A2
 
@@ -33,15 +34,31 @@ export function scoreToMidi(score: CanonicalScore): Midi {
   transient.name = 'Jump Transients (GM percussion approximation)';
   transient.channel = 9;
 
-  for (const event of score.events) {
-    lead.addNote({
-      midi: event.musical.midi,
-      time: event.timeSeconds,
-      duration: durationForArticulation(event.musical.articulation, EVENT_INTERVAL_SECONDS),
-      velocity: event.musical.velocity,
-    });
+  const rawCoda = midi.addTrack();
+  rawCoda.name = 'RAW Coda (nearest-semitone approximation)';
 
-    if (event.musical.bassTrigger) {
+  for (const event of score.events) {
+    const coda = codaStateForEvent(event);
+
+    if (coda.musicalMix > 0) {
+      lead.addNote({
+        midi: event.musical.midi,
+        time: event.timeSeconds,
+        duration: durationForArticulation(event.musical.articulation, EVENT_INTERVAL_SECONDS),
+        velocity: event.musical.velocity * coda.musicalMix,
+      });
+    }
+
+    if (coda.rawMix > 0) {
+      rawCoda.addNote({
+        midi: frequencyToNearestMidi(event.raw.frequencyHz),
+        time: event.timeSeconds,
+        duration: event.durationSeconds,
+        velocity: event.raw.velocity * coda.rawMix,
+      });
+    }
+
+    if (event.musical.bassTrigger && coda.bass) {
       bass.addNote({
         midi: foldMidiToBass(event.musical.midi),
         time: event.timeSeconds,
@@ -50,7 +67,7 @@ export function scoreToMidi(score: CanonicalScore): Midi {
       });
     }
 
-    if (event.musical.haloTrigger) {
+    if (event.musical.haloTrigger && coda.halo) {
       halo.addNote({
         midi: event.musical.midi,
         time: event.timeSeconds,
@@ -59,7 +76,7 @@ export function scoreToMidi(score: CanonicalScore): Midi {
       });
     }
 
-    if (event.globalIndex % EVENTS_PER_BAR === 0) {
+    if (event.globalIndex % EVENTS_PER_BAR === 0 && coda.drone) {
       for (const midiNote of DRONE_MIDI) {
         drone.addNote({
           midi: midiNote,
@@ -70,7 +87,7 @@ export function scoreToMidi(score: CanonicalScore): Midi {
       }
     }
 
-    if (event.musical.transientTrigger) {
+    if (event.musical.transientTrigger && coda.transient) {
       transient.addNote({
         midi: 42,
         time: event.timeSeconds,
