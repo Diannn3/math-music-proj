@@ -34,7 +34,7 @@ export default function BifurcateExperience() {
   const score = useMemo(() => generateCanonicalScore(), []);
   const engineRef = useRef<ActiveAudioEngine | null>(null);
   const auditionerRef = useRef<ParameterAuditioner | null>(null);
-  const rafRef = useRef<number | null>(null);
+  const clockRef = useRef<number | null>(null);
   const [mode, setMode] = useState<AudioMode>('raw');
   const [audioReady, setAudioReady] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -57,25 +57,33 @@ export default function BifurcateExperience() {
     bindEngine(engine);
     auditionerRef.current = new ParameterAuditioner();
 
-    const tick = () => {
-      const activeEngine = engineRef.current;
-      if (activeEngine) {
-        setTime(activeEngine.currentTimeSeconds);
-        setPlaying(activeEngine.transport.state === 'started');
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-
     return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      if (clockRef.current !== null) window.clearInterval(clockRef.current);
       engineRef.current?.dispose();
       engineRef.current = null;
       auditionerRef.current?.dispose();
       auditionerRef.current = null;
     };
   }, [score]);
+
+  useEffect(() => {
+    if (!playing) return;
+
+    const updateClock = () => {
+      const activeEngine = engineRef.current;
+      if (activeEngine) setTime(activeEngine.currentTimeSeconds);
+    };
+
+    updateClock();
+    clockRef.current = window.setInterval(updateClock, 125);
+
+    return () => {
+      if (clockRef.current !== null) {
+        window.clearInterval(clockRef.current);
+        clockRef.current = null;
+      }
+    };
+  }, [playing]);
 
   const begin = async () => {
     try {
@@ -86,6 +94,7 @@ export default function BifurcateExperience() {
       engine.schedule();
       setAudioReady(true);
       await engine.play();
+      setPlaying(true);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : String(caught));
     }
@@ -95,8 +104,14 @@ export default function BifurcateExperience() {
     const engine = engineRef.current;
     if (!engine) return;
     try {
-      if (engine.transport.state === 'started') engine.pause();
-      else await engine.play();
+      if (engine.transport.state === 'started') {
+        engine.pause();
+        setPlaying(false);
+        setTime(engine.currentTimeSeconds);
+      } else {
+        await engine.play();
+        setPlaying(true);
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : String(caught));
     }
@@ -104,6 +119,7 @@ export default function BifurcateExperience() {
 
   const stop = () => {
     engineRef.current?.stop();
+    setPlaying(false);
     setEvent(score.events[0]);
     setTime(0);
   };
@@ -133,6 +149,8 @@ export default function BifurcateExperience() {
     try {
       setError(null);
       engineRef.current?.pause();
+      setPlaying(false);
+      setTime(engineRef.current?.currentTimeSeconds ?? time);
       setAuditioning(true);
       await auditioner.audition(
         portrait.events,
@@ -157,6 +175,7 @@ export default function BifurcateExperience() {
 
     try {
       previous?.pause();
+      setPlaying(false);
       previous?.dispose();
 
       const next = createAudioEngine(nextMode, score);
@@ -168,7 +187,10 @@ export default function BifurcateExperience() {
         await next.initialize();
         next.schedule();
         next.seek(position);
-        if (wasPlaying) await next.play();
+        if (wasPlaying) {
+          await next.play();
+          setPlaying(true);
+        }
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : String(caught));
@@ -217,7 +239,7 @@ export default function BifurcateExperience() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [audioReady, auditioning, exploreOpen, mode, switchingMode, time]);
+  }, [audioReady, auditioning, exploreOpen, mode, switchingMode]);
 
   const progress = Math.min(1, time / score.durationSeconds);
   const coda = mode === 'musicalized' ? codaStateForEvent(event) : null;
