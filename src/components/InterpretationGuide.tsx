@@ -44,6 +44,7 @@ export default function InterpretationGuide({ onClose }: Props) {
         <div><dt>P</dt><dd>performance / instrument</dd></div>
         <div><dt>L</dt><dd>math lens</dd></div>
         <div><dt>E</dt><dd>explore</dd></div>
+        <div><dt>D</dt><dd>presenter cues</dd></div>
         <div><dt>? /</dt><dd>help</dd></div>
         <div><dt>F</dt><dd>fullscreen</dd></div>
       </dl>
