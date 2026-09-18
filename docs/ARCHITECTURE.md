@@ -236,6 +236,16 @@ Separate from the static point cloud:
 - orbit-history strip
 - labels/readouts
 
+## 7.1 Cinematic camera score
+
+Performance Mode uses a deterministic chapter camera score from `src/visual/visualScore.ts`.
+
+The camera changes **presentation framing only**. The bifurcation points, active event values, and score are not recomputed or displaced.
+
+To avoid visually misrepresenting mathematics during a smooth camera transition, the DOM-based active scan line and point temporarily fade out until the WebGL renderer reports that the camera transition has completed.
+
+Instrument Mode resets the scatterplot to the full original camera view.
+
 ### Math Lens
 
 - cobweb plot
