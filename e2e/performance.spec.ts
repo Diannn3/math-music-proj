@@ -19,19 +19,14 @@ test('desktop release performance stays inside explicit CI budgets', async ({ pa
   const plotMs = performance.now() - start;
   expect(plotMs).toBeLessThan(budget.orbitFieldReadyMs);
 
+  await page.getByRole('button', { name: /Begin raw sonification/ }).click();
+  await expect(page.locator('.stage-readout .mode-chip')).toContainText('RAW');
+  await page.getByRole('button', { name: 'Pause' }).click();
+
   const switchStart = performance.now();
   await page.locator('.view-switch').getByRole('button', { name: 'Instrument', exact: true }).click();
   await expect(page.locator('.transport-panel')).toBeVisible();
   expect(performance.now() - switchStart).toBeLessThan(budget.instrumentSwitchMs);
-
-  await page.getByRole('button', { name: /Begin raw sonification/ }).click().catch(() => {});
-  if (await page.getByRole('button', { name: /Begin raw sonification/ }).count()) {
-    await page.locator('.view-switch').getByRole('button', { name: 'Performance', exact: true }).click();
-    await page.getByRole('button', { name: /Begin raw sonification/ }).click();
-    await expect(page.locator('.stage-readout .mode-chip')).toContainText('RAW');
-    await page.getByRole('button', { name: 'Pause' }).click();
-    await page.locator('.view-switch').getByRole('button', { name: 'Instrument', exact: true }).click();
-  }
 
   await page.getByRole('button', { name: /Explore choose r/ }).click();
   const explore = page.getByRole('region', { name: 'Explore logistic-map parameter' });
