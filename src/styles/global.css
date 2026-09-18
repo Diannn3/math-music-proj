@@ -224,3 +224,27 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--cool); outl
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .001ms !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
 }
+
+
+.stage { transition: background 700ms ease, box-shadow 700ms ease, border-color 700ms ease; }
+.stage--periodic { background: radial-gradient(circle at 50% 44%, rgba(128,167,255,.065), transparent 36%), var(--surface); border-color: rgba(128,167,255,.13); }
+.stage--chaotic { background: radial-gradient(circle at 50% 44%, rgba(255,140,118,.06), transparent 38%), var(--surface); border-color: rgba(255,140,118,.12); }
+.stage--transition-or-unresolved { background: radial-gradient(circle at 50% 44%, rgba(230,200,121,.05), transparent 36%), var(--surface); border-color: rgba(230,200,121,.12); }
+.chapter-cue { position: absolute; z-index: 4; top: 18px; left: 50%; transform: translateX(-50%); display: grid; gap: 5px; min-width: min(420px, calc(100% - 140px)); padding: 9px 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; background: rgba(8,9,11,.74); backdrop-filter: blur(8px); text-align: center; pointer-events: none; animation: chapter-cue-in-out 2.4s ease both; }
+.chapter-cue span { color: rgba(241,239,232,.6); font: 9px/1 monospace; letter-spacing: .14em; }
+.chapter-cue strong { font-size: 11px; font-weight: 560; }
+.chapter-cue--island { border-color: rgba(128,167,255,.26); box-shadow: 0 0 28px rgba(128,167,255,.08); }
+.chapter-cue--island span { color: #a9c1ff; }
+.chapter-cue--break, .chapter-cue--return, .chapter-cue--limit { border-color: rgba(255,140,118,.2); }
+@keyframes chapter-cue-in-out {
+  0% { opacity: 0; transform: translate(-50%, -6px); }
+  12% { opacity: 1; transform: translate(-50%, 0); }
+  72% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, 4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chapter-cue { animation: none; opacity: 1; transform: translateX(-50%); }
+}
+@media (max-width: 640px) {
+  .chapter-cue { top: 10px; min-width: calc(100% - 80px); padding: 7px 9px; }
+}
