@@ -25,7 +25,15 @@ type ErrorResponse = {
   message: string;
 };
 
-const ctx: DedicatedWorkerGlobalScope = self as unknown as DedicatedWorkerGlobalScope;
+type WorkerContext = {
+  onmessage: ((message: MessageEvent<BuildRequest>) => void) | null;
+  postMessage: (
+    message: ProgressResponse | CompleteResponse | ErrorResponse,
+    transfer?: Transferable[],
+  ) => void;
+};
+
+const ctx = self as unknown as WorkerContext;
 
 ctx.onmessage = (message: MessageEvent<BuildRequest>) => {
   if (message.data.type !== 'build') return;
