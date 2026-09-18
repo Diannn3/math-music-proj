@@ -17,12 +17,26 @@ import { MASTER_COMPRESSOR, MASTER_LIMITER_DB, MASTER_REVERB, RAW_CODA_VOLUME_DB
 
 export type OfflineRenderMode = 'raw' | 'musicalized';
 
-export async function renderScoreOffline(
+export const FULL_RENDER_TAIL_SECONDS: Record<OfflineRenderMode, number> = {
+  raw: 0.5,
+  musicalized: 3,
+};
+
+async function renderScoreWindowOffline(
   score: CanonicalScore,
   mode: OfflineRenderMode,
-  sampleRate = 44100,
+  contentSeconds: number,
+  tailSeconds: number,
+  sampleRate: number,
 ): Promise<AudioBuffer> {
-  const tail = mode === 'musicalized' ? 3 : 0.5;
+  if (!Number.isFinite(contentSeconds) || contentSeconds <= 0 || contentSeconds > score.durationSeconds) {
+    throw new RangeError('contentSeconds must lie inside the canonical score duration.');
+  }
+  if (!Number.isFinite(tailSeconds) || tailSeconds < 0) {
+    throw new RangeError('tailSeconds must be finite and non-negative.');
+  }
+
+  const events = score.events.filter((event) => event.timeSeconds < contentSeconds);
   const rendered = await Tone.Offline(async () => {
     const limiter = new Tone.Limiter(MASTER_LIMITER_DB).toDestination();
 
@@ -33,7 +47,7 @@ export async function renderScoreOffline(
         volume: RAW_SYNTH_VOLUME_DB,
       }).connect(limiter);
 
-      for (const event of score.events) {
+      for (const event of events) {
         synth.triggerAttackRelease(
           event.raw.frequencyHz,
           event.durationSeconds,
@@ -101,7 +115,7 @@ export async function renderScoreOffline(
       volume: RAW_CODA_VOLUME_DB,
     }).connect(compressor);
 
-    for (const event of score.events) {
+    for (const event of events) {
       const time = event.timeSeconds;
       const coda = codaStateForEvent(event);
       leadPanner.pan.setValueAtTime(event.musical.pan, time);
@@ -161,9 +175,33 @@ export async function renderScoreOffline(
         );
       }
     }
-  }, score.durationSeconds + tail, 2, sampleRate);
+  }, contentSeconds + tailSeconds, 2, sampleRate);
 
   const buffer = rendered.get();
   if (!buffer) throw new Error('Tone.Offline completed without an AudioBuffer.');
   return buffer;
+}
+
+export async function renderScoreOffline(
+  score: CanonicalScore,
+  mode: OfflineRenderMode,
+  sampleRate = 44100,
+): Promise<AudioBuffer> {
+  return renderScoreWindowOffline(
+    score,
+    mode,
+    score.durationSeconds,
+    FULL_RENDER_TAIL_SECONDS[mode],
+    sampleRate,
+  );
+}
+
+export async function renderScoreExcerptOffline(
+  score: CanonicalScore,
+  mode: OfflineRenderMode,
+  contentSeconds = 2,
+  sampleRate = 44100,
+): Promise<AudioBuffer> {
+  const tailSeconds = mode === 'musicalized' ? 1 : 0.5;
+  return renderScoreWindowOffline(score, mode, contentSeconds, tailSeconds, sampleRate);
 }
