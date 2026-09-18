@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MusicalAudioEngine, RawAudioEngine, findEventAtTime } from '../audio';
+import { MusicalAudioEngine, ParameterAuditioner, RawAudioEngine, findEventAtTime } from '../audio';
 import { generateCanonicalScore } from '../composition';
-import type { MathMusicEvent } from '../composition';
+import type { MathMusicEvent, ParameterPortrait } from '../composition';
 import { BifurcationField, OrbitHistory } from '../visual';
 import MappingInspector from './MappingInspector';
 import ChapterNavigator from './ChapterNavigator';
 import MathLens from './MathLens';
+import ExplorePanel from './ExplorePanel';
 
 type AudioMode = 'raw' | 'musicalized';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
@@ -24,12 +25,15 @@ function createAudioEngine(mode: AudioMode, score: ReturnType<typeof generateCan
 export default function BifurcateExperience() {
   const score = useMemo(() => generateCanonicalScore(), []);
   const engineRef = useRef<ActiveAudioEngine | null>(null);
+  const auditionerRef = useRef<ParameterAuditioner | null>(null);
   const rafRef = useRef<number | null>(null);
   const [mode, setMode] = useState<AudioMode>('raw');
   const [audioReady, setAudioReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [switchingMode, setSwitchingMode] = useState(false);
   const [mathLensOpen, setMathLensOpen] = useState(false);
+  const [exploreOpen, setExploreOpen] = useState(false);
+  const [auditioning, setAuditioning] = useState(false);
   const [time, setTime] = useState(0);
   const [event, setEvent] = useState<MathMusicEvent>(() => score.events[0]);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +46,7 @@ export default function BifurcateExperience() {
   useEffect(() => {
     const engine = createAudioEngine('raw', score);
     bindEngine(engine);
+    auditionerRef.current = new ParameterAuditioner();
 
     const tick = () => {
       const activeEngine = engineRef.current;
@@ -58,6 +63,8 @@ export default function BifurcateExperience() {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       engineRef.current?.dispose();
       engineRef.current = null;
+      auditionerRef.current?.dispose();
+      auditionerRef.current = null;
     };
   }, [score]);
 
@@ -96,9 +103,38 @@ export default function BifurcateExperience() {
     const engine = engineRef.current;
     if (!engine) return;
 
+    auditionerRef.current?.cancel();
+    setAuditioning(false);
     engine.seek(startSeconds);
     setTime(startSeconds);
     setEvent(findEventAtTime(score, startSeconds));
+  };
+
+  const closeExplore = () => {
+    auditionerRef.current?.cancel();
+    setAuditioning(false);
+    setExploreOpen(false);
+    setEvent(findEventAtTime(score, engineRef.current?.currentTimeSeconds ?? time));
+  };
+
+  const auditionPortrait = async (portrait: ParameterPortrait) => {
+    const auditioner = auditionerRef.current;
+    if (!auditioner || auditioning) return;
+
+    try {
+      setError(null);
+      engineRef.current?.pause();
+      setAuditioning(true);
+      await auditioner.audition(
+        portrait.events,
+        mode,
+        (nextEvent) => setEvent(nextEvent),
+        () => setAuditioning(false),
+      );
+    } catch (caught) {
+      setAuditioning(false);
+      setError(caught instanceof Error ? caught.message : String(caught));
+    }
   };
 
   const switchMode = async (nextMode: AudioMode) => {
@@ -175,20 +211,41 @@ export default function BifurcateExperience() {
 
         <div className="analysis-toolbar">
           <ChapterNavigator
-            currentSegmentId={event.segmentId}
-            disabled={!audioReady || switchingMode}
+            currentSegmentId={exploreOpen ? '' : event.segmentId}
+            disabled={!audioReady || switchingMode || exploreOpen}
             onSelect={seekToChapter}
           />
-          <button
-            type="button"
-            className={mathLensOpen ? 'analysis-toggle is-active' : 'analysis-toggle'}
-            aria-pressed={mathLensOpen}
-            onClick={() => setMathLensOpen((open) => !open)}
-          >
-            <strong>Math Lens</strong>
-            <span>cobweb + Lyapunov</span>
-          </button>
+          <div className="analysis-actions">
+            <button
+              type="button"
+              className={exploreOpen ? 'analysis-toggle is-active' : 'analysis-toggle'}
+              aria-pressed={exploreOpen}
+              onClick={() => exploreOpen ? closeExplore() : setExploreOpen(true)}
+            >
+              <strong>Explore</strong>
+              <span>choose r + audition</span>
+            </button>
+            <button
+              type="button"
+              className={mathLensOpen ? 'analysis-toggle is-active' : 'analysis-toggle'}
+              aria-pressed={mathLensOpen}
+              onClick={() => setMathLensOpen((open) => !open)}
+            >
+              <strong>Math Lens</strong>
+              <span>cobweb + Lyapunov</span>
+            </button>
+          </div>
         </div>
+
+        {exploreOpen ? (
+          <ExplorePanel
+            mode={mode}
+            auditioning={auditioning}
+            onPortraitChange={setEvent}
+            onAudition={(portrait) => void auditionPortrait(portrait)}
+            onClose={closeExplore}
+          />
+        ) : null}
 
         {mathLensOpen ? <MathLens event={event} onClose={() => setMathLensOpen(false)} /> : null}
 
