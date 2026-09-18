@@ -20,13 +20,31 @@ type CompleteResponse = {
   pointCount: number;
 };
 
+type ErrorResponse = {
+  type: 'error';
+  message: string;
+};
+
 const ctx: DedicatedWorkerGlobalScope = self as unknown as DedicatedWorkerGlobalScope;
 
 ctx.onmessage = (message: MessageEvent<BuildRequest>) => {
   if (message.data.type !== 'build') return;
 
   const { rSamples, burnIn, retain, x0 } = message.data;
+  const validIntegers = [rSamples, burnIn, retain].every((value) => Number.isInteger(value) && value >= 0);
   const pointCount = rSamples * retain;
+
+  if (!validIntegers || rSamples < 2 || retain < 1 || burnIn < 1 || !Number.isFinite(x0) || x0 < 0 || x0 > 1) {
+    const response: ErrorResponse = { type: 'error', message: 'Invalid bifurcation build request.' };
+    ctx.postMessage(response);
+    return;
+  }
+
+  if (pointCount > 1_000_000) {
+    const response: ErrorResponse = { type: 'error', message: 'Bifurcation request exceeds the one-million-point safety cap.' };
+    ctx.postMessage(response);
+    return;
+  }
   const xCoords = new Float32Array(pointCount);
   const yCoords = new Float32Array(pointCount);
   let cursor = 0;
