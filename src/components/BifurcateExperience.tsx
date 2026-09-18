@@ -7,6 +7,7 @@ import MappingInspector from './MappingInspector';
 import ChapterNavigator from './ChapterNavigator';
 import MathLens from './MathLens';
 import ExplorePanel from './ExplorePanel';
+import ExportPanel from './ExportPanel';
 
 type AudioMode = 'raw' | 'musicalized';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
@@ -34,6 +35,7 @@ export default function BifurcateExperience() {
   const [mathLensOpen, setMathLensOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
   const [auditioning, setAuditioning] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [time, setTime] = useState(0);
   const [event, setEvent] = useState<MathMusicEvent>(() => score.events[0]);
   const [error, setError] = useState<string | null>(null);
@@ -235,6 +237,15 @@ export default function BifurcateExperience() {
               <strong>Math Lens</strong>
               <span>cobweb + Lyapunov</span>
             </button>
+            <button
+              type="button"
+              className={exportOpen ? 'analysis-toggle is-active' : 'analysis-toggle'}
+              aria-pressed={exportOpen}
+              onClick={() => setExportOpen((open) => !open)}
+            >
+              <strong>Export</strong>
+              <span>JSON + MIDI</span>
+            </button>
           </div>
         </div>
 
@@ -249,6 +260,8 @@ export default function BifurcateExperience() {
         ) : null}
 
         {mathLensOpen ? <MathLens event={event} onClose={() => setMathLensOpen(false)} /> : null}
+
+        {exportOpen ? <ExportPanel score={score} onClose={() => setExportOpen(false)} /> : null}
 
         <MappingInspector event={event} mode={mode} />
 
