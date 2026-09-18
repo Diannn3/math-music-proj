@@ -307,6 +307,7 @@ Read: **[Mathematical Integrity](docs/MATHEMATICAL_INTEGRITY.md)**
 - [Architecture](docs/ARCHITECTURE.md)
 - [Mathematical Integrity](docs/MATHEMATICAL_INTEGRITY.md)
 - [Presentation Guide](docs/PRESENTATION.md)
+- [Audio Review](docs/AUDIO_REVIEW.md)
 - [Feature Branch History](docs/BRANCH_HISTORY.md)
 
 ---
