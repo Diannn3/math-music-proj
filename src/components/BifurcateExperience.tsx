@@ -8,6 +8,7 @@ import ChapterNavigator from './ChapterNavigator';
 import MathLens from './MathLens';
 import ExplorePanel from './ExplorePanel';
 import ExportPanel from './ExportPanel';
+import ChapterCue from './ChapterCue';
 
 type AudioMode = 'raw' | 'musicalized';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
@@ -235,9 +236,10 @@ export default function BifurcateExperience() {
         <code>x[n+1] = r · x[n] · (1 − x[n])</code>
       </header>
 
-      <section className="stage" aria-label="Bifurcation visualization stage">
+      <section className={`stage stage--${event.regime}`} aria-label="Bifurcation visualization stage">
         <BifurcationField event={event} showBeginOverlay={!audioReady} onBegin={begin} />
         {audioReady ? <OrbitHistory events={score.events} current={event} /> : null}
+        {audioReady && !exploreOpen ? <ChapterCue event={event} /> : null}
         {audioReady ? (
           <div className="stage-readout" aria-live="polite">
             <span className={`mode-chip mode-chip--${mode}`}>{mode === 'raw' ? 'RAW' : 'MUSICALIZED'}</span>
