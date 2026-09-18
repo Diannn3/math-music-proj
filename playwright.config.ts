@@ -1,5 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const chromiumLaunch = {
+  args: [
+    '--enable-webgl',
+    '--use-gl=swiftshader',
+    '--autoplay-policy=no-user-gesture-required',
+  ],
+};
+
 export default defineConfig({
   testDir: './e2e',
   timeout: 45_000,
@@ -17,15 +25,39 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: '**/*.mobile.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
-        launchOptions: {
-          args: [
-            '--enable-webgl',
-            '--use-gl=swiftshader',
-            '--autoplay-policy=no-user-gesture-required',
-          ],
-        },
+        launchOptions: chromiumLaunch,
+      },
+    },
+    {
+      name: 'firefox',
+      testIgnore: '**/*.mobile.spec.ts',
+      use: {
+        ...devices['Desktop Firefox'],
+      },
+    },
+    {
+      name: 'webkit',
+      testIgnore: '**/*.mobile.spec.ts',
+      use: {
+        ...devices['Desktop Safari'],
+      },
+    },
+    {
+      name: 'mobile-chromium',
+      testMatch: '**/*.mobile.spec.ts',
+      use: {
+        ...devices['Pixel 5'],
+        launchOptions: chromiumLaunch,
+      },
+    },
+    {
+      name: 'mobile-webkit',
+      testMatch: '**/*.mobile.spec.ts',
+      use: {
+        ...devices['iPhone 13'],
       },
     },
   ],
