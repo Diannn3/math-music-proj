@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      RELEASE_URL: https://bifurcate-logistic-jequopv4n-nerooo3.vercel.app
+      RELEASE_URL: https://bifurcate-logistic-map-pmobzob2q-nerooo3.vercel.app
 
     steps:
       - name: Checkout verification suite
