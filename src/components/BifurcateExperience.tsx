@@ -11,15 +11,26 @@ import ExportPanel from './ExportPanel';
 import ChapterCue from './ChapterCue';
 import InterpretationGuide from './InterpretationGuide';
 import { isHelpShortcut } from './keyboard';
+import {
+  presentationChapterForKey,
+  releaseScreenWakeLock,
+  requestScreenWakeLock,
+} from '../presentation';
+import type { ScreenWakeLockSentinel, WakeLockNavigator } from '../presentation';
 
 type AudioMode = 'raw' | 'musicalized';
 type ExperienceView = 'performance' | 'instrument';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
 
-function isTypingTarget(target: EventTarget | null): boolean {
+function isTextEntryTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;
-  return target.isContentEditable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON';
+  return target.isContentEditable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+}
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return isTextEntryTarget(target) || target.tagName === 'BUTTON';
 }
 
 function formatTime(seconds: number): string {
@@ -38,6 +49,7 @@ export default function BifurcateExperience() {
   const engineRef = useRef<ActiveAudioEngine | null>(null);
   const auditionerRef = useRef<ParameterAuditioner | null>(null);
   const clockRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<ScreenWakeLockSentinel | null>(null);
   const [mode, setMode] = useState<AudioMode>('raw');
   const [view, setView] = useState<ExperienceView>('performance');
   const [audioReady, setAudioReady] = useState(false);
@@ -105,6 +117,51 @@ export default function BifurcateExperience() {
       }
     };
   }, [playing, score.durationSeconds]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const acquireWakeLock = async () => {
+      if (!playing || document.visibilityState !== 'visible' || wakeLockRef.current) return;
+
+      const sentinel = await requestScreenWakeLock(
+        navigator as Navigator & WakeLockNavigator,
+      );
+
+      if (!sentinel) return;
+
+      if (cancelled || !playing) {
+        await releaseScreenWakeLock(sentinel);
+        return;
+      }
+
+      wakeLockRef.current = sentinel;
+      sentinel.addEventListener?.('release', () => {
+        if (wakeLockRef.current === sentinel) wakeLockRef.current = null;
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') void acquireWakeLock();
+    };
+
+    if (playing) {
+      void acquireWakeLock();
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    } else {
+      const current = wakeLockRef.current;
+      wakeLockRef.current = null;
+      void releaseScreenWakeLock(current);
+    }
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      const current = wakeLockRef.current;
+      wakeLockRef.current = null;
+      void releaseScreenWakeLock(current);
+    };
+  }, [playing]);
 
   const begin = async () => {
     try {
@@ -220,6 +277,14 @@ export default function BifurcateExperience() {
     }
   };
 
+  const toggleFullscreen = () => {
+    const operation = document.fullscreenElement
+      ? document.exitFullscreen()
+      : document.documentElement.requestFullscreen?.();
+
+    if (operation) void operation.catch(() => undefined);
+  };
+
   useEffect(() => {
     const handleKeyDown = (keyEvent: KeyboardEvent) => {
       const key = keyEvent.key.toLowerCase();
@@ -229,6 +294,20 @@ export default function BifurcateExperience() {
       if (isHelpShortcut(keyEvent)) {
         keyEvent.preventDefault();
         setGuideOpen((open) => !open);
+        return;
+      }
+
+      const presentationChapter = presentationChapterForKey(key);
+      if (
+        presentationChapter
+        && !isTextEntryTarget(keyEvent.target)
+        && audioReady
+        && !switchingMode
+        && !auditioning
+        && !exploreOpen
+      ) {
+        keyEvent.preventDefault();
+        seekToChapter(presentationChapter.startSeconds);
         return;
       }
 
@@ -272,8 +351,7 @@ export default function BifurcateExperience() {
       }
 
       if (key === 'f') {
-        if (document.fullscreenElement) void document.exitFullscreen();
-        else void document.documentElement.requestFullscreen?.();
+        toggleFullscreen();
       }
     };
 
@@ -368,6 +446,7 @@ export default function BifurcateExperience() {
             >
               {mode === 'raw' ? 'Hear musicalized' : 'Hear raw'}
             </button>
+            <button type="button" onClick={toggleFullscreen}>Fullscreen</button>
             <button type="button" onClick={() => setView('instrument')}>Open instrument</button>
           </div>
         ) : null}
