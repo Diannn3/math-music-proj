@@ -9,15 +9,28 @@ import MathLens from './MathLens';
 import ExplorePanel from './ExplorePanel';
 import ExportPanel from './ExportPanel';
 import ChapterCue from './ChapterCue';
+import InterpretationGuide from './InterpretationGuide';
+import { isHelpShortcut } from './keyboard';
+import {
+  presentationChapterForKey,
+  releaseScreenWakeLock,
+  requestScreenWakeLock,
+} from '../presentation';
+import type { ScreenWakeLockSentinel, WakeLockNavigator } from '../presentation';
 
 type AudioMode = 'raw' | 'musicalized';
 type ExperienceView = 'performance' | 'instrument';
 type ActiveAudioEngine = RawAudioEngine | MusicalAudioEngine;
 
-function isTypingTarget(target: EventTarget | null): boolean {
+function isTextEntryTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;
-  return target.isContentEditable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON';
+  return target.isContentEditable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+}
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return isTextEntryTarget(target) || target.tagName === 'BUTTON';
 }
 
 function formatTime(seconds: number): string {
@@ -36,6 +49,7 @@ export default function BifurcateExperience() {
   const engineRef = useRef<ActiveAudioEngine | null>(null);
   const auditionerRef = useRef<ParameterAuditioner | null>(null);
   const clockRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<ScreenWakeLockSentinel | null>(null);
   const [mode, setMode] = useState<AudioMode>('raw');
   const [view, setView] = useState<ExperienceView>('performance');
   const [audioReady, setAudioReady] = useState(false);
@@ -45,6 +59,7 @@ export default function BifurcateExperience() {
   const [exploreOpen, setExploreOpen] = useState(false);
   const [auditioning, setAuditioning] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [time, setTime] = useState(0);
   const [event, setEvent] = useState<MathMusicEvent>(() => score.events[0]);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +117,51 @@ export default function BifurcateExperience() {
       }
     };
   }, [playing, score.durationSeconds]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const acquireWakeLock = async () => {
+      if (!playing || document.visibilityState !== 'visible' || wakeLockRef.current) return;
+
+      const sentinel = await requestScreenWakeLock(
+        navigator as Navigator & WakeLockNavigator,
+      );
+
+      if (!sentinel) return;
+
+      if (cancelled || !playing) {
+        await releaseScreenWakeLock(sentinel);
+        return;
+      }
+
+      wakeLockRef.current = sentinel;
+      sentinel.addEventListener?.('release', () => {
+        if (wakeLockRef.current === sentinel) wakeLockRef.current = null;
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') void acquireWakeLock();
+    };
+
+    if (playing) {
+      void acquireWakeLock();
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    } else {
+      const current = wakeLockRef.current;
+      wakeLockRef.current = null;
+      void releaseScreenWakeLock(current);
+    }
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      const current = wakeLockRef.current;
+      wakeLockRef.current = null;
+      void releaseScreenWakeLock(current);
+    };
+  }, [playing]);
 
   const begin = async () => {
     try {
@@ -217,11 +277,42 @@ export default function BifurcateExperience() {
     }
   };
 
+  const toggleFullscreen = () => {
+    const operation = document.fullscreenElement
+      ? document.exitFullscreen()
+      : document.documentElement.requestFullscreen?.();
+
+    if (operation) void operation.catch(() => undefined);
+  };
+
   useEffect(() => {
     const handleKeyDown = (keyEvent: KeyboardEvent) => {
+      const key = keyEvent.key.toLowerCase();
+
+      // Help remains available while keyboard focus is on non-text controls.
+      // Accept both "/" and "?" plus the physical Slash code for layout tolerance.
+      if (isHelpShortcut(keyEvent)) {
+        keyEvent.preventDefault();
+        setGuideOpen((open) => !open);
+        return;
+      }
+
+      const presentationChapter = presentationChapterForKey(key);
+      if (
+        presentationChapter
+        && !isTextEntryTarget(keyEvent.target)
+        && audioReady
+        && !switchingMode
+        && !auditioning
+        && !exploreOpen
+      ) {
+        keyEvent.preventDefault();
+        seekToChapter(presentationChapter.startSeconds);
+        return;
+      }
+
       if (isTypingTarget(keyEvent.target)) return;
 
-      const key = keyEvent.key.toLowerCase();
       if (key === ' ') {
         keyEvent.preventDefault();
         if (audioReady && !switchingMode && !auditioning) void togglePlayback();
@@ -260,13 +351,17 @@ export default function BifurcateExperience() {
       }
 
       if (key === 'f') {
-        if (document.fullscreenElement) void document.exitFullscreen();
-        else void document.documentElement.requestFullscreen?.();
+        toggleFullscreen();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    document.documentElement.dataset.bifurcateShortcutsReady = 'true';
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      delete document.documentElement.dataset.bifurcateShortcutsReady;
+    };
   }, [audioReady, auditioning, exploreOpen, mode, switchingMode]);
 
   const progress = Math.min(1, time / score.durationSeconds);
@@ -292,6 +387,16 @@ export default function BifurcateExperience() {
         </div>
         <div className="hero-meta">
           <code>x[n+1] = r · x[n] · (1 − x[n])</code>
+          <div className="hero-actions">
+          <button
+            type="button"
+            className="guide-button"
+            aria-expanded={guideOpen}
+            aria-controls="interpretation-guide"
+            onClick={() => setGuideOpen((open) => !open)}
+          >
+            How to read this
+          </button>
           <div className="view-switch" role="group" aria-label="Experience view">
             <button
               type="button"
@@ -310,8 +415,15 @@ export default function BifurcateExperience() {
               Instrument
             </button>
           </div>
+          </div>
         </div>
       </header>
+
+      {guideOpen ? (
+        <div id="interpretation-guide">
+          <InterpretationGuide onClose={() => setGuideOpen(false)} />
+        </div>
+      ) : null}
 
       <section className={`stage stage--${event.regime}`} aria-label="Bifurcation visualization stage">
         <BifurcationField
@@ -334,6 +446,7 @@ export default function BifurcateExperience() {
             >
               {mode === 'raw' ? 'Hear musicalized' : 'Hear raw'}
             </button>
+            <button type="button" onClick={toggleFullscreen}>Fullscreen</button>
             <button type="button" onClick={() => setView('instrument')}>Open instrument</button>
           </div>
         ) : null}
@@ -428,7 +541,15 @@ export default function BifurcateExperience() {
         <div className="transport-row">
           <button type="button" onClick={togglePlayback} disabled={!audioReady || switchingMode}>{playing ? 'Pause' : 'Play'}</button>
           <button type="button" onClick={stop} disabled={!audioReady || switchingMode}>Stop</button>
-          <div className="timeline" aria-label={`Playback ${Math.round(progress * 100)} percent`}>
+          <div
+            className="timeline"
+            role="progressbar"
+            aria-label="Playback progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(progress * 100)}
+            aria-valuetext={`${formatTime(time)} of ${formatTime(score.durationSeconds)}`}
+          >
             <div className="timeline-fill" style={{ transform: `scaleX(${progress})` }} />
           </div>
           <output>{formatTime(time)} / {formatTime(score.durationSeconds)}</output>

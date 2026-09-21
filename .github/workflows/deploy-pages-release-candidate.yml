@@ -1,9 +1,6 @@
 name: Deploy release candidate to GitHub Pages
 
 on:
-  push:
-    branches:
-      - "feature/31-external-release-candidate"
   workflow_dispatch:
 
 concurrency:

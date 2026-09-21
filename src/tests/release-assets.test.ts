@@ -33,8 +33,9 @@ describe('release static assets', () => {
     expect(manifest.name).toContain('BIFURCATE');
     expect(manifest.display).toBe('standalone');
     expect(manifest.theme_color).toBe('#0f1115');
+    expect(manifest.start_url).toBe('./');
     expect(manifest.icons[0]).toMatchObject({
-      src: '/favicon.svg',
+      src: 'favicon.svg',
       type: 'image/svg+xml',
     });
   });

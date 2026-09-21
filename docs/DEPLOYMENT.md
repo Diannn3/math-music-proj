@@ -62,3 +62,74 @@ A release candidate is not complete until an external HTTPS deployment passes:
 10. static security/cache headers
 
 The deployment URL must then be tested from a separate browser/device when possible.
+
+
+## Current external-host status
+
+The application build and deployment artifact are verified. External hosting is currently an **account/provider configuration step**, not an application defect.
+
+Observed provider behavior during the release-candidate pass:
+
+### Vercel
+
+Two direct-file preview deployments were accepted by the connector and returned HTTP 200, but the served response body was empty. Because an independent GitHub runner could not find the BIFURCATE markup, these deployments are **not** considered valid release candidates.
+
+Do not treat an HTTP 200 alone as deployment success. The manual external workflow requires non-empty BIFURCATE HTML plus real browser interaction.
+
+### GitHub Pages
+
+The Pages workflow successfully passed:
+
+- locked install
+- independent Python mathematical verification
+- deterministic artwork verification
+- unit tests
+- Astro diagnostics
+- production build
+
+Publication stopped only at repository Pages configuration. The GitHub integration does not have permission to create/enable the Pages site.
+
+To use GitHub Pages:
+
+1. Open repository **Settings → Pages**.
+2. Enable Pages and select **GitHub Actions** as the source.
+3. Run **Deploy release candidate to GitHub Pages** manually.
+4. Run **Verify external release candidate** with the resulting HTTPS URL.
+
+### Netlify
+
+A Netlify project named `bifurcate-logistic-map` was created successfully. The connected Netlify deployment operation requires an authenticated CLI handoff for uploading the site bytes. The connector can prepare that command but does not itself execute the local CLI upload.
+
+The project/site ID is intentionally not required by application code.
+
+## Manual external verification
+
+The workflow:
+
+```text
+Verify external release candidate
+```
+
+is manual by design.
+
+It requires one input:
+
+```text
+release_url = https://...
+```
+
+The workflow rejects non-HTTPS hosts and verifies:
+
+1. non-empty BIFURCATE HTML
+2. security headers
+3. static release assets
+4. WebGL field or explicit fallback
+5. Web Audio unlock
+6. RAW mode
+7. period-3 chapter navigation
+8. Explore Mode
+9. provenance JSON download
+10. MIDI download
+11. JavaScript-disabled fallback
+
+Normal CI never depends on an external host.

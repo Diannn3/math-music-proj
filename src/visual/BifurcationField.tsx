@@ -39,8 +39,17 @@ export default function BifurcationField({
   const [status, setStatus] = useState<PlotStatus>({ state: 'loading', progress: 0 });
   const [cameraMoving, setCameraMoving] = useState(false);
   const [profile] = useState(detectVisualQuality);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   const frame = cinematic ? getVisualFrame(event.segmentId) : null;
+
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReducedMotion(query.matches);
+    update();
+    query.addEventListener?.('change', update);
+    return () => query.removeEventListener?.('change', update);
+  }, []);
 
   const active = useMemo(() => {
     if (!frame) {
@@ -159,18 +168,19 @@ export default function BifurcationField({
     if (!scatterplot) return;
 
     let cancelled = false;
-    setCameraMoving(true);
+    setCameraMoving(!reducedMotion);
 
+    const transitionDuration = reducedMotion ? 0 : undefined;
     const move = !cinematic || !frame
       ? scatterplot.zoomToOrigin({
-          transition: true,
-          transitionDuration: 700,
+          transition: !reducedMotion,
+          transitionDuration: transitionDuration ?? 700,
         })
       : scatterplot.zoomToArea(
           visualFrameToNdcArea(frame),
           {
-            transition: true,
-            transitionDuration: frame.transitionMs,
+            transition: !reducedMotion,
+            transitionDuration: transitionDuration ?? frame.transitionMs,
           },
         );
 
@@ -181,7 +191,7 @@ export default function BifurcationField({
     return () => {
       cancelled = true;
     };
-  }, [cinematic, event.segmentId, frame, status.state]);
+  }, [cinematic, event.segmentId, frame, reducedMotion, status.state]);
 
   const axisLeft = frame?.rMin ?? BIFURCATION_R_MIN;
   const axisRight = frame?.rMax ?? BIFURCATION_R_MAX;

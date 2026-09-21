@@ -258,12 +258,14 @@ When focus is not inside an interactive control:
 | Space | Play / pause |
 | R | RAW mode |
 | M | MUSICALIZED mode |
+| 1–8 | Jump to macro chapters I–VIII |
 | E | Explore Mode |
 | L | Math Lens |
 | P | Performance / Instrument view |
+| ? or / | Interpretation guide |
 | F | Fullscreen |
 
-Reduced-motion preference is honored.
+Reduced-motion preference is honored. During active playback the app also requests a screen wake lock when the browser supports it; unsupported or denied wake locks do not affect audio.
 
 ---
 
@@ -312,6 +314,7 @@ Read: **[Mathematical Integrity](docs/MATHEMATICAL_INTEGRITY.md)**
 - [Architecture](docs/ARCHITECTURE.md)
 - [Mathematical Integrity](docs/MATHEMATICAL_INTEGRITY.md)
 - [Presentation Guide](docs/PRESENTATION.md)
+- [Submission Package](docs/SUBMISSION.md)
 - [Audio Review](docs/AUDIO_REVIEW.md)
 - [Device QA](docs/DEVICE_QA.md)
 - [Performance and Visual Regression](docs/PERFORMANCE.md)

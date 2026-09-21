@@ -1,5 +1,22 @@
 # Presentation Guide
 
+## Presenter preflight
+
+Before the audience enters:
+
+1. Use a Chromium-, Firefox-, or WebKit-family browser already verified by the project CI.
+2. Connect venue audio and confirm both RAW sine output and MUSICALIZED output are audible.
+3. Load the app once before going fullscreen so WebGL and audio assets are warm.
+4. Click **Begin**, then pause. While playback is active the app requests a screen wake lock when the browser supports it; denial is harmless.
+5. Keep the browser zoom at 100% and use the visible **Fullscreen** control or the `F` key.
+6. Export provenance JSON, MIDI, RAW WAV, and MUSICALIZED WAV before the session.
+7. Keep the deterministic poster and a screen recording available as visual fallbacks.
+8. Verify the period-3 jump with presentation key `6`.
+
+The presenter should never depend on venue internet after the application has loaded.
+
+---
+
 ## Recommended live flow
 
 ### 1. Introduction — 30–45 seconds
@@ -191,9 +208,35 @@ If WebGL fails, the audio and mathematical explanation can continue from exporte
 | Space | play/pause |
 | R | RAW |
 | M | MUSICALIZED |
+| 1–8 | jump to the start of macro chapters I–VIII |
 | E | Explore |
 | L | Math Lens |
+| P | Performance / Instrument |
+| ? or / | interpretation guide |
 | F | fullscreen |
+
+Macro chapter keys are derived from the canonical score timeline, not duplicated timestamps. In particular, `6` seeks to **VI. Island**, bar 61, 2:30, `r = 3.83`.
+
+---
+
+# Time-constrained versions
+
+## 90-second explanation
+
+1. Show the equation and state that the same deterministic events drive sound and visualization.
+2. Use `2`, `3`, then `5` to contrast short periodic cycles with chaos.
+3. Use `6` for the period-3 reveal.
+4. Switch RAW → MUSICALIZED at the same position.
+5. Close with: **deterministic does not mean predictable**.
+
+## 5-minute demo
+
+1. 30 seconds — equation + shared event-stream rule.
+2. 90 seconds — selected RAW portraits using keys `1`, `2`, `3`, `5`, `6`.
+3. 60 seconds — RAW vs MUSICALIZED A/B.
+4. 60 seconds — Math Lens at `r = 3.83`.
+5. 60 seconds — Explore Mode and mapping inspector.
+6. 30 seconds — integrity statement and closing line.
 
 ---
 

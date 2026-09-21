@@ -33,7 +33,7 @@ export default defineConfig({
     },
     {
       name: 'firefox',
-      testIgnore: '**/*.mobile.spec.ts',
+      testIgnore: ['**/*.mobile.spec.ts', '**/external-release.spec.ts'],
       use: {
         ...devices['Desktop Firefox'],
         launchOptions: {
@@ -47,7 +47,7 @@ export default defineConfig({
     },
     {
       name: 'webkit',
-      testIgnore: '**/*.mobile.spec.ts',
+      testIgnore: ['**/*.mobile.spec.ts', '**/external-release.spec.ts'],
       use: {
         ...devices['Desktop Safari'],
       },

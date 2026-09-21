@@ -1,10 +1,12 @@
 name: Verify external release candidate
 
 on:
-  push:
-    branches:
-      - "feature/31-external-release-candidate"
   workflow_dispatch:
+    inputs:
+      release_url:
+        description: Public HTTPS release-candidate URL
+        required: true
+        type: string
 
 concurrency:
   group: bifurcate-external-release
@@ -18,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      RELEASE_URL: https://bifurcate-logistic-map-pmobzob2q-nerooo3.vercel.app
+      RELEASE_URL: ${{ inputs.release_url }}
 
     steps:
       - name: Checkout verification suite
@@ -38,6 +40,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          case "$RELEASE_URL" in
+            https://*) ;;
+            *) echo "::error::release_url must use HTTPS"; exit 1 ;;
+          esac
+
           status=""
           for attempt in $(seq 1 30); do
             status=$(curl --location --silent --show-error --output /tmp/bifurcate-rc.html --write-out '%{http_code}' "$RELEASE_URL" || true)
@@ -47,7 +54,9 @@ jobs:
             fi
             sleep 10
           done
+
           test "$status" = "200"
+          test -s /tmp/bifurcate-rc.html
           if ! grep -q "BIFURCATE" /tmp/bifurcate-rc.html; then
             echo "::error::HTTP 200 response does not contain BIFURCATE markup."
             echo "----- response preview -----"

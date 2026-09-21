@@ -8,9 +8,11 @@ const description =
   'A deterministic audiovisual composition and interactive mathematical instrument built from the logistic map.';
 const configuredSite = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '');
 const canonicalUrl = configuredSite ? `${configuredSite}/` : null;
+const basePath = import.meta.env.BASE_URL;
+const publicAsset = (name: string) => `${basePath}${name}`;
 const socialImage = configuredSite
   ? `${configuredSite}/bifurcate-social.png`
-  : '/bifurcate-social.png';
+  : publicAsset('bifurcate-social.png');
 ---
 
 <html lang="en">
@@ -43,9 +45,9 @@ const socialImage = configuredSite
     <meta name="twitter:image" content={socialImage} />
 
     {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <link rel="preload" href="/bifurcate-poster.png" as="image" fetchpriority="high" />
+    <link rel="icon" href={publicAsset('favicon.svg')} type="image/svg+xml" />
+    <link rel="manifest" href={publicAsset('site.webmanifest')} />
+    <link rel="preload" href={publicAsset('bifurcate-poster.png')} as="image" fetchpriority="high" />
 
     <title>{title}</title>
   </head>
